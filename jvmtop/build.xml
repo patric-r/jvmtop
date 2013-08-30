@@ -1,0 +1,68 @@
+<project name="jvmtop" default="dist" basedir=".">
+    <description>
+        jvmtop build file
+    </description>
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+  <property name="lib.dir"  location="lib"/>
+  <property name="res.dir"  location="res"/>
+
+  <property environment="env"/>
+
+  <path id="compile.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${env.JAVA_HOME}/lib">
+          <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac includeantruntime="false" srcdir="${src}" destdir="${build}" classpathref="compile.classpath" nowarn="true" />
+  </target>
+
+  <target name="dist" depends="compile"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+
+    <delete file="${dist}/jvmtop.jar" />
+
+    <jar jarfile="${dist}/jvmtop.jar" basedir="${build}" update="no">
+      <zipfileset src="${lib.dir}/jopt-simple-4.5.jar">
+      <exclude name="META-INF/**"/>
+      </zipfileset>
+    </jar>
+
+
+    <tar destfile="${dist}/jvmtop.tar">
+      <tarfileset dir="${dist}">
+        <include name="jvmtop.jar"/>
+      </tarfileset>
+      <tarfileset dir="${res.dir}">
+        <include name="*"/>
+      </tarfileset>
+    </tar>
+
+    <gzip zipfile="${dist}/jvmtop.tar.gz" src="${dist}/jvmtop.tar"/>
+
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>

@@ -1,0 +1,20 @@
+Jvmtop - java monitoring for the command-line.
+http://code.google.com/p/jvmtop
+
+Installation
+------------
+
+To install jvmtop, just extract the downloaded the gzipped tarball in a directory of your choice.
+
+Ensure that the environment variable JAVA_HOME is set to a path of a specific JDK, otherwise
+the path to a JDK is tried to be guessed by the path of the 'java' executable.
+
+A JRE is not sufficient.
+
+Start jvmtop with the execution of jvmtop.sh
+For all options of jvmtop, pass the --help argument.
+
+
+For more information and the documentation, visit the project's homepage:
+
+http://code.google.com/p/jvmtop
