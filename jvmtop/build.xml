@@ -36,6 +36,7 @@
   <target name="dist" depends="compile"
         description="generate the distribution" >
     <!-- Create the distribution directory -->
+    <mkdir dir="${dist}"/>
 
     <delete file="${dist}/jvmtop.jar" />
 
