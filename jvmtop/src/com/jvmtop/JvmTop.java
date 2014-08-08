@@ -93,6 +93,11 @@ public class JvmTop
     parser.accepts("profile", "start CPU profiling at the specified jvm");
     parser.accepts("sysinfo", "outputs diagnostic information");
     parser.accepts("verbose", "verbose mode");
+    parser.accepts("threadlimit",
+        "sets the number of displayed threads in detail mode")
+        .withRequiredArg().ofType(Integer.class);
+    parser
+        .accepts("disable-threadlimit", "displays all threads in detail mode");
 
     parser
         .acceptsAll(Arrays.asList(new String[] { "p", "pid" }),
@@ -128,6 +133,10 @@ public class JvmTop
 
     Integer iterations = a.has("once") ? 1 : -1;
 
+    Integer threadlimit = null;
+
+    boolean threadLimitEnabled = true;
+
     if (a.hasArgument("delay"))
     {
       delay = (Double) (a.valueOf("delay"));
@@ -148,9 +157,19 @@ public class JvmTop
       pid = Integer.valueOf((String) a.nonOptionArguments().get(0));
     }
 
-    if (a.hasArgument("PID"))
+    if (a.hasArgument("pid"))
     {
-      pid = (Integer) a.valueOf("PID");
+      pid = (Integer) a.valueOf("pid");
+    }
+
+    if (a.hasArgument("threadlimit"))
+    {
+      threadlimit = (Integer) a.valueOf("threadlimit");
+    }
+
+    if (a.has("disable-threadlimit"))
+    {
+      threadLimitEnabled = false;
     }
 
     if (a.has("verbose"))
@@ -181,7 +200,13 @@ public class JvmTop
         }
         else
         {
-          jvmTop.run(new VMDetailView(pid));
+          VMDetailView vmDetailView = new VMDetailView(pid);
+          vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
+          if (threadlimit != null)
+          {
+            vmDetailView.setNumberOfDisplayedThreads(threadlimit);
+          }
+          jvmTop.run(vmDetailView);
 
         }
 

@@ -46,6 +46,10 @@ public class VMDetailView extends AbstractConsoleView
 
   private boolean         sortByTotalCPU_         = false;
 
+  private int             numberOfDisplayedThreads_ = 10;
+
+  private boolean         displayedThreadLimit_     = true;
+
   //TODO: refactor
   private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
 
@@ -185,7 +189,8 @@ public class VMDetailView extends AbstractConsoleView
       {
         ThreadInfo info = vmInfo_.getThreadMXBean().getThreadInfo(tid);
         displayedThreads++;
-        if (displayedThreads > 10)
+        if (displayedThreads > numberOfDisplayedThreads_
+            && displayedThreadLimit_)
         {
           break;
         }
@@ -203,11 +208,14 @@ public class VMDetailView extends AbstractConsoleView
                   .getProcessCpuTime(), 1), getBlockedThread(info));
         }
       }
-      if (newThreadCPUMillis.size() >= 10)
+      if (newThreadCPUMillis.size() >= numberOfDisplayedThreads_
+          && displayedThreadLimit_)
       {
 
         System.out
-            .println(" Note: Only top 10 threads (according cpu load) are shown!");
+.printf(
+            " Note: Only top %d threads (according cpu load) are shown!",
+            numberOfDisplayedThreads_);
       }
       previousThreadCPUMillis = newThreadCPUMillis;
     }
@@ -229,6 +237,26 @@ public class VMDetailView extends AbstractConsoleView
     {
       return "";
     }
+  }
+
+  public int getNumberOfDisplayedThreads()
+  {
+    return numberOfDisplayedThreads_;
+  }
+
+  public void setNumberOfDisplayedThreads(int numberOfDisplayedThreads)
+  {
+    numberOfDisplayedThreads_ = numberOfDisplayedThreads;
+  }
+
+  public boolean isDisplayedThreadLimit()
+  {
+    return displayedThreadLimit_;
+  }
+
+  public void setDisplayedThreadLimit(boolean displayedThreadLimit)
+  {
+    displayedThreadLimit_ = displayedThreadLimit;
   }
 
   private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime)
