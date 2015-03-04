@@ -41,8 +41,9 @@ public class VMProfileView extends AbstractConsoleView
 
   private VMInfo     vmInfo_;
 
-  public VMProfileView(int vmid) throws Exception
+  public VMProfileView(int vmid, Integer width) throws Exception
   {
+    super(width);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
@@ -79,9 +80,13 @@ public class VMProfileView extends AbstractConsoleView
       return;
     }
 
+    int w = width - 40;
     System.out.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(),
-        leftStr(vmInfo_.getDisplayName(), 40));
+        leftStr(vmInfo_.getDisplayName(), w));
 
+    // these are the spaces taken up by the formatting, the rest is usable
+    // for printing out the method name
+    w = width - (1 + 6 + 3 + 9 + 3 + 2);
     for (Iterator<MethodStats> iterator = cpuSampler_.getTop(20).iterator(); iterator
         .hasNext();)
     {
@@ -93,7 +98,7 @@ public class VMProfileView extends AbstractConsoleView
         System.out.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio
             / 100d
             * cpuSampler_.getUpdateCount() * 0.1d,
-            shortFQN(stats.getClassName(), stats.getMethodName(), 56));
+            shortFQN(stats.getClassName(), stats.getMethodName(), w));
       }
     }
   }

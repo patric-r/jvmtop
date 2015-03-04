@@ -40,14 +40,21 @@ import java.util.Map;
 public abstract class AbstractConsoleView implements ConsoleView
 {
 
+  private static final int MIN_WIDTH = 80;
+
   private boolean shouldExit_ = false;
+
+  protected final int width;
 
   /**
    *
    */
-  public AbstractConsoleView()
+  public AbstractConsoleView(Integer width)
   {
     super();
+    if (width == null) width = MIN_WIDTH;
+    if (width < MIN_WIDTH) width = MIN_WIDTH;
+    this.width = width;
   }
 
   /**

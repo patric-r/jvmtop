@@ -103,6 +103,10 @@ public class JvmTop
         .acceptsAll(Arrays.asList(new String[] { "p", "pid" }),
             "PID to connect to").withRequiredArg().ofType(Integer.class);
 
+    parser
+        .acceptsAll(Arrays.asList(new String[] { "w", "width" }),
+            "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
+
     return parser;
   }
 
@@ -126,6 +130,8 @@ public class JvmTop
     boolean sysInfoOption = a.has("sysinfo");
 
     Integer pid = null;
+
+    Integer width = null;
 
     double delay = 1.0;
 
@@ -162,6 +168,11 @@ public class JvmTop
       pid = (Integer) a.valueOf("pid");
     }
 
+    if (a.hasArgument("width"))
+    {
+      width = (Integer) a.valueOf("width");
+    }
+
     if (a.hasArgument("threadlimit"))
     {
       threadlimit = (Integer) a.valueOf("threadlimit");
@@ -190,17 +201,17 @@ public class JvmTop
       jvmTop.setMaxIterations(iterations);
       if (pid == null)
       {
-        jvmTop.run(new VMOverviewView());
+        jvmTop.run(new VMOverviewView(width));
       }
       else
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid));
+          jvmTop.run(new VMProfileView(pid, width));
         }
         else
         {
-          VMDetailView vmDetailView = new VMDetailView(pid);
+          VMDetailView vmDetailView = new VMDetailView(pid, width);
           vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
           if (threadlimit != null)
           {
