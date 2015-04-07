@@ -111,12 +111,12 @@ public class CPUSampler
 
       if (ti.getStackTrace().length > 0
           && ti.getThreadState() == State.RUNNABLE
-)
-      {
-        for (StackTraceElement stElement : ti.getStackTrace())
-        {
-          if (isFiltered(stElement))
-          {
+            ) {
+          for (StackTraceElement stElement : ti.getStackTrace()) {
+            if (isReallySleeping(stElement)) {
+              break;
+            }
+            if (isFiltered(stElement)) {
             continue;
           }
           String key = stElement.getClassName() + "."
@@ -143,12 +143,14 @@ public class CPUSampler
     return updateCount_.get();
   }
 
-  public boolean isFiltered(StackTraceElement se)
-  {
-    for (String filteredPackage : filter)
-    {
-      if (se.getClassName().startsWith(filteredPackage))
-      {
+  private boolean isReallySleeping(StackTraceElement se) {
+    return se.getClassName().equals("sun.nio.ch.EPollArrayWrapper") &&
+          se.getMethodName().equals("epollWait");
+  }
+
+  public boolean isFiltered(StackTraceElement se) {
+    for (String filteredPackage : filter) {
+      if (se.getClassName().startsWith(filteredPackage)) {
         return true;
       }
     }
