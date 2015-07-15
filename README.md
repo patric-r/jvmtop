@@ -64,5 +64,5 @@ In <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/ExampleOutput.md'
  128026 JMX server connection timeout   TIMED_WAITING  0.00%     0.00%
 ```
 
-<a href='https://github.com/Patric-R/jvmtop/issues'>Feature requests / bug reports</a> are always welcome.<br>
+<a href='https://github.com/Patric-R/jvmtop/issues'>Pull requests / bug reports</a> are always welcome.<br>
 <br>
