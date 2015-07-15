@@ -1,5 +1,5 @@
 Jvmtop - java monitoring for the command-line.
-http://code.google.com/p/jvmtop
+https://github.com/patric-r/jvmtop
 
 Installation
 ------------
@@ -17,4 +17,4 @@ For all options of jvmtop, pass the --help argument.
 
 For more information and the documentation, visit the project's homepage:
 
-http://code.google.com/p/jvmtop
+https://github.com/patric-r/jvmtop

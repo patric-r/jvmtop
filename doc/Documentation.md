@@ -36,7 +36,7 @@ Command-line: `jvmtop.sh`
 
 ```
  JvmTop 0.4.1 alpha   amd64  8 cpus, Linux 2.6.32-27, load avg 0.12
- http://code.google.com/p/jvmtop
+ https://github.com/patric-r/jvmtop
 
   PID MAIN-CLASS      HPCUR HPMAX NHCUR NHMAX    CPU     GC    VM USERNAME   #T DL
  3370 rapperSimpleApp  165m  455m  109m  176m  0.12%  0.00% S6U37 web        21
@@ -71,7 +71,7 @@ Command-line:  `jvmtop.sh <pid>`
 
 ```
  JvmTop 0.4.1 alpha   amd64,  4 cpus, Linux 2.6.18-34
- http://code.google.com/p/jvmtop
+ https://github.com/patric-r/jvmtop
 
  PID 3539: org.apache.catalina.startup.Bootstrap
  ARGS: start

@@ -27,7 +27,7 @@ Command-line:  <code>jvmtop.sh &lt;pid&gt;</code>
 
 
 <pre><code> JvmTop 0.4.1 alpha   amd64,  4 cpus, Linux 2.6.18-34<br>
- http://code.google.com/p/jvmtop<br>
+ https://github.com/patric-r/jvmtop<br>
 <br>
  PID 3539: org.apache.catalina.startup.Bootstrap<br>
  ARGS: start<br>

@@ -12,7 +12,7 @@ jvmtop.sh --profile <PID>
 # Example output #
 ```
  JvmTop 0.7.0 alpha - 15:16:34,  amd64,  8 cpus, Linux 2.6.32-27, load avg 0.41
- http://code.google.com/p/jvmtop
+ https://github.com/patric-r/jvmtop
 
  Profiling PID 24015: org.apache.catalina.startup.Bootstrap
 

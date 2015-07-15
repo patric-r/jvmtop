@@ -354,7 +354,7 @@ public class JvmTop
     {
       System.out.println();
     }
-    System.out.println(" http://code.google.com/p/jvmtop");
+    System.out.println(" https://github.com/patric-r/jvmtop");
     System.out.println();
   }
 
