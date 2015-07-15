@@ -1,4 +1,4 @@
-Jvmtop is a lightweight console application to monitor all accessible, running jvms on a machine.<br>
+<b>jvmtop</b> is a lightweight console application to monitor all accessible, running jvms on a machine.<br>
 In a top-like manner, it displays <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/ExampleOutput.md'>JVM internal metrics</a> (e.g. memory information) of running java processes.<br>
 <br>
 Jvmtop does also include a <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/ConsoleProfiler.md'>CPU console profiler</a>.<br>
@@ -12,26 +12,18 @@ if you experience an issue or need further help, please <a href='https://github.
 Jvmtop is open-source. Checkout the <a href='https://github.com/Patric-R/jvmtop'>source code</a>. Patches are very welcome!<br>
 <br>
 Also have a look at the <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/Documentation.md'>documentation</a> or at a <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/ExampleOutput.md'>captured live-example</a>.<br>
-<br>
-<pre><code> JvmTop 0.8.0 alpha   amd64  8 cpus, Linux 2.6.32-27, load avg 0.12
-<br>
- http://code.google.com/p/jvmtop
-<br>
 
-<br>
+```
+ JvmTop 0.8.0 alpha   amd64  8 cpus, Linux 2.6.32-27, load avg 0.12
+ http://code.google.com/p/jvmtop
+
   PID MAIN-CLASS      HPCUR HPMAX NHCUR NHMAX    CPU     GC    VM USERNAME   #T DL
-<br>
  3370 rapperSimpleApp  165m  455m  109m  176m  0.12%  0.00% S6U37 web        21
-<br>
 11272 ver.resin.Resin [ERROR: Could not attach to VM]
-<br>
 27338 WatchdogManager   11m   28m   23m  130m  0.00%  0.00% S6U37 web        31
-<br>
 19187 m.jvmtop.JvmTop   20m 3544m   13m  130m  0.93%  0.47% S6U37 web        20
-<br>
 16733 artup.Bootstrap  159m  455m  166m  304m  0.12%  0.00% S6U37 web        46
-<br>
-</code></pre>
+```
 
 <hr />
 
@@ -40,8 +32,8 @@ Also have a look at the <a href='https://github.com/Patric-R/jvmtop/blob/master/
 <ul><li>improved attach compatibility for all IBM jvms<br>
 </li><li>fixed wrong CPU/GC values for IBM J9 jvms<br>
 </li><li>in case of unsupported heap size metric retrieval, n/a will be displayed instead of 0m<br>
-</li><li>improved argument parsing, support for short-options, added help (pass <code>--help</code>), see <a href='https://code.google.com/p/jvmtop/issues/detail?id=#28'>issue #28</a> (now using the great <a href='http://pholser.github.io/jopt-simple'>jopt-simple</a> library)<br>
-</li><li>when passing the <code>--once</code> option, terminal will not be cleared anymore (see <a href='https://code.google.com/p/jvmtop/issues/detail?id=#27'>issue #27</a>)<br>
+</li><li>improved argument parsing, support for short-options, added help (pass <code>--help</code>), see <a href='https://github.com/Patric-R/jvmtop/issues/28'>issue #28</a> (now using the great <a href='http://pholser.github.io/jopt-simple'>jopt-simple</a> library)<br>
+</li><li>when passing the <code>--once</code> option, terminal will not be cleared anymore (see <a href='https://github.com/Patric-R/jvmtop/issues/27'>issue #27</a>)<br>
 </li><li>improved shell script for guessing the path if a <code>JAVA_HOME</code> environment variable is not present (thanks to <a href='https://groups.google.com/forum/#!topic/jvmtop-discuss/KGg_WpL_yAU'>Markus Kolb</a>)</li></ul>
 
 <a href='https://github.com/Patric-R/jvmtop/blob/master/doc/Changelog.md'>Full changelog</a>
