@@ -15,7 +15,7 @@ Also have a look at the <a href='https://github.com/Patric-R/jvmtop/blob/master/
 
 ```
  JvmTop 0.8.0 alpha   amd64  8 cpus, Linux 2.6.32-27, load avg 0.12
- http://code.google.com/p/jvmtop
+ https://github.com/Patric-R/jvmtop
 
   PID MAIN-CLASS      HPCUR HPMAX NHCUR NHMAX    CPU     GC    VM USERNAME   #T DL
  3370 rapperSimpleApp  165m  455m  109m  176m  0.12%  0.00% S6U37 web        21
