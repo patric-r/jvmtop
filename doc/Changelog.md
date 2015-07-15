@@ -3,19 +3,19 @@
   * improved attach compatibility for all IBM jvms
   * fixed wrong CPU/GC values for IBM J9 jvms
   * in case of unsupported heap size metric retrieval, n/a will be displayed instead of 0m
-  * improved argument parsing, support for short-options, added help (pass `--help`), see [issue #28](https://code.google.com/p/jvmtop/issues/detail?id=#28) (now using the great [jopt-simple](http://pholser.github.io/jopt-simple) library)
-  * when passing the `--once` option, terminal will not be cleared anymore (see [issue #27](https://code.google.com/p/jvmtop/issues/detail?id=#27))
+  * improved argument parsing, support for short-options, added help (pass `--help`), see [issue #28](https://github.com/Patric-R/jvmtop/issues/28) (now using the great [jopt-simple](http://pholser.github.io/jopt-simple) library)
+  * when passing the `--once` option, terminal will not be cleared anymore (see [issue #27](https://github.com/Patric-R/jvmtop/issues/27))
   * improved shell script for guessing the path if a `JAVA_HOME` environment variable is not present (thanks to [Markus Kolb](https://groups.google.com/forum/#!topic/jvmtop-discuss/KGg_WpL_yAU))
 
 ### 07/30/2013 jvmtop 0.7.1 released ###
 **Changes:**
-  * scrolling issue in some terminal environments should now be finally fixed, see [issue #21](https://code.google.com/p/jvmtop/issues/detail?id=#21) and [issue #25](https://code.google.com/p/jvmtop/issues/detail?id=#25)
+  * scrolling issue in some terminal environments should now be finally fixed, see [issue #21](https://github.com/Patric-R/jvmtop/issues/21) and [issue #25](https://github.com/Patric-R/jvmtop/issues/25)
   * new argument: `--once` will terminate jvmtop right after first output iteration
 
 ### 07/19/2013 jvmtop 0.7.0 released ###
 **Changes:**
   * New Feature: jvmtop does now include a sampling-based [CPU Profiler](http://code.google.com/p/jvmtop/wiki/ConsoleProfiler)
-  * jvmtop does now support FreeBSD, fixing the [issue #21](https://code.google.com/p/jvmtop/issues/detail?id=#21) and [issue #22](https://code.google.com/p/jvmtop/issues/detail?id=#22)
+  * jvmtop does now support FreeBSD, fixing the [issue #21](https://github.com/Patric-R/jvmtop/issues/21) and [issue #22](https://github.com/Patric-R/jvmtop/issues/22)
   * refresh rate can now be configured, using argument `--delay <interval>`
   * minor fixes
 
