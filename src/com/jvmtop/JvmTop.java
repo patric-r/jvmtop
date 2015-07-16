@@ -107,6 +107,11 @@ public class JvmTop
         .acceptsAll(Arrays.asList(new String[] { "w", "width" }),
             "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
 
+    parser
+        .accepts("threadnamewidth",
+            "sets displayed thread name length in detail mode (defaults to 30)")
+        .withRequiredArg().ofType(Integer.class);
+
     return parser;
   }
 
@@ -142,6 +147,8 @@ public class JvmTop
     Integer threadlimit = null;
 
     boolean threadLimitEnabled = true;
+
+    Integer threadNameWidth = null;
 
     if (a.hasArgument("delay"))
     {
@@ -190,6 +197,11 @@ public class JvmTop
       logger.fine("Verbosity mode.");
     }
 
+    if (a.hasArgument("threadnamewidth"))
+    {
+      threadNameWidth = (Integer) a.valueOf("threadnamewidth");
+    }
+
     if (sysInfoOption)
     {
       outputSystemProps();
@@ -216,6 +228,10 @@ public class JvmTop
           if (threadlimit != null)
           {
             vmDetailView.setNumberOfDisplayedThreads(threadlimit);
+          }
+          if (threadNameWidth != null)
+          {
+            vmDetailView.setThreadNameDisplayWidth(threadNameWidth);
           }
           jvmTop.run(vmDetailView);
 

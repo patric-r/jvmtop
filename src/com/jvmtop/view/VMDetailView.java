@@ -44,14 +44,16 @@ public class VMDetailView extends AbstractConsoleView
 
   private VMInfo          vmInfo_;
 
-  private boolean         sortByTotalCPU_         = false;
+  private boolean         sortByTotalCPU_           = false;
 
   private int             numberOfDisplayedThreads_ = 10;
+
+  private int             threadNameDisplayWidth_   = 30;
 
   private boolean         displayedThreadLimit_     = true;
 
   //TODO: refactor
-  private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
+  private Map<Long, Long> previousThreadCPUMillis   = new HashMap<Long, Long>();
 
   public VMDetailView(int vmid, Integer width) throws Exception
   {
@@ -159,8 +161,9 @@ public class VMDetailView extends AbstractConsoleView
    */
   private void printTopThreads() throws Exception
   {
-    System.out
-        .printf("  TID   NAME                                    STATE    CPU  TOTALCPU BLOCKEDBY%n");
+    System.out.printf(" %6s %-" + threadNameDisplayWidth_
+        + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU",
+        "TOTALCPU", "BLOCKEDBY");
 
     if (vmInfo_.getThreadMXBean().isThreadCpuTimeSupported())
     {
@@ -198,9 +201,10 @@ public class VMDetailView extends AbstractConsoleView
         if (info != null)
         {
           System.out.printf(
-              " %6d %-30s  %13s %5.2f%%    %5.2f%% %5s %n",
+              " %6d %-" + threadNameDisplayWidth_
+                  + "s  %13s %5.2f%%    %5.2f%% %5s %n",
               tid,
-              leftStr(info.getThreadName(), 30),
+              leftStr(info.getThreadName(), threadNameDisplayWidth_),
               info.getThreadState(),
               getThreadCPUUtilization(cpuTimeMap.get(tid),
                   vmInfo_.getDeltaUptime()),
@@ -213,8 +217,7 @@ public class VMDetailView extends AbstractConsoleView
           && displayedThreadLimit_)
       {
 
-        System.out
-.printf(
+        System.out.printf(
             " Note: Only top %d threads (according cpu load) are shown!",
             numberOfDisplayedThreads_);
       }
@@ -258,6 +261,16 @@ public class VMDetailView extends AbstractConsoleView
   public void setDisplayedThreadLimit(boolean displayedThreadLimit)
   {
     displayedThreadLimit_ = displayedThreadLimit;
+  }
+
+  public int getThreadNameDisplayWidth()
+  {
+    return threadNameDisplayWidth_;
+  }
+
+  public void setThreadNameDisplayWidth(int threadNameDisplayWidth_)
+  {
+    this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
   }
 
   private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime)
