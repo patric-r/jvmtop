@@ -22,7 +22,7 @@ Before raising a bug report (which is always welcome), please check the followin
 
   * Does your jvmtop process run with the same JDK/JRE (same version/binary) as the process you're trying to monitor?
  
-  * Are you able to connect to the proces with the JDK tool jconsole?
+  * Are you able to connect to the process with the JDK tool jconsole?
     If you can't, then probably jvmtop can't do anything here because both tools uses the same attach mechanism.
 
 
