@@ -16,13 +16,15 @@ However, due to several reasons (often security-related reasons), it might be po
 
 Before raising a bug report (which is always welcome), please check the following things:
 
-  * Does your target process run under the same user as jvmtop? In many JREs with default configuration, jvmtop can only monitor processes for of the user from which jvmtop has been started (with the exception of root).
-
-  * Does the same problem appear if jvmtop is running under root (or Administrator privileges in windows)?
+  * Does your target process run under the same user as jvmtop?
+    In many JREs, this is a strict requirement due to security reasons.
+    root is also not able to monitor java processes other than the ones owned by itself in most environments.
 
   * Does your jvmtop process run with the same JDK/JRE (same version/binary) as the process you're trying to monitor?
+ 
+  * Are you able to connect to the proces with the JDK tool jconsole?
+    If you can't, then probably jvmtop can't do anything here because both tools uses the same attach mechanism.
 
-  * Are you able to connect to the process, which jvmtop can't monitor with the JDK tools jstack and jconsole?
 
 If you answered all bullets with "yes", please file a bug report.
 Provide details of your operating system, the JDK jvmtop is running and the to-be-monitored processes is running.
