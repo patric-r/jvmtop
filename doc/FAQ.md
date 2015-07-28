@@ -29,4 +29,4 @@ Before raising a bug report (which is always welcome), please check the followin
 If you answered all bullets with "yes", please file a bug report.
 Provide details of your operating system, the JDK jvmtop is running and the to-be-monitored processes is running.
 
-If you answered at least one bullet with "no", some security policy kicked in, and there's nothing jvmtop can do about this here - but maybe you can try relaxing the security policies.
+If you answered at least one bullet with "no", some security policy kicked in, and there's most probably nothing jvmtop can do about this here. Any help is welcome to "workaround" those problems.
