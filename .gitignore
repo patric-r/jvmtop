@@ -1,3 +1,15 @@
-/build
-/dist
-/bin
+# Eclipse
+.classpath
+.project
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
