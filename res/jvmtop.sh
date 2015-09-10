@@ -4,7 +4,7 @@
 #
 # author: Markus Kolb
 # 
-SCRIPT=$(greadlink --canonicalize "${0}" 2>&1 || readlink --canonicalize "${0}" 2>&1 || readlink "${0}" 2>&1 || echo "${0}")
+SCRIPT=$(greadlink --canonicalize "${0}" 2>/dev/null || readlink --canonicalize "${0}" 2>/dev/null || readlink "${0}" 2>/dev/null || echo "${0}")
 DIR="$(cd "$(dirname "${SCRIPT}")" && pwd)"
 
 if [ -z "$JAVA_HOME" ] ; then
