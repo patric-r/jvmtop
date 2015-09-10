@@ -4,7 +4,8 @@
 #
 # author: Markus Kolb
 # 
-DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+SCRIPT=$(greadlink --canonicalize "${0}" 2>&1 || readlink --canonicalize "${0}" 2>&1 || readlink "${0}" 2>&1 || echo "${0}")
+DIR="$(cd "$(dirname "${SCRIPT}")" && pwd)"
 
 if [ -z "$JAVA_HOME" ] ; then
         JAVA_HOME=`readlink -f \`which java 2>/dev/null\` 2>/dev/null | \
