@@ -24,10 +24,32 @@
     </dependencies>
 
 
-    <properties>
-        <!-- change it to point to your tools.jar from your JDK -->
-        <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-    </properties>
+    <profiles>
+        <profile>
+            <id>windows-profile</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <file>
+                    <exists>${JAVA_HOME}/lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${JAVA_HOME}/lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac-profile</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
@@ -62,13 +84,13 @@
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
-                                <descriptor>src/main/assembly/distribution.xml</descriptor>
+                                <descriptor>src/main/assembly/distribution.xml
+                                </descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>
