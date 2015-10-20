@@ -27,6 +27,13 @@ Also have a look at the <a href='https://github.com/patric-r/jvmtop/blob/master/
 
 <hr />
 
+<h3>Installation</h3>
+Click on the <a href="https://github.com/patric-r/jvmtop/releases"> releases tab</a>, download the
+most recent tar.gz archive. Extract it, ensure that the `JAVA_HOME` environment variable points to a valid JDK and run `./jvmtop.sh`.<br><br>
+Further information can be found in the [INSTALL file](https://github.com/patric-r/jvmtop/blob/master/INSTALL)
+
+
+
 <h3>08/14/2013 jvmtop 0.8.0 released</h3>
 <b>Changes:</b>
 <ul><li>improved attach compatibility for all IBM jvms<br>
