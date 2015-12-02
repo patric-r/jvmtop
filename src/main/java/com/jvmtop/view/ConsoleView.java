@@ -52,4 +52,9 @@ public interface ConsoleView
    *
    */
   public void sleep(long millis) throws Exception;
+  
+  boolean isTopBarRequired();
+  
+  boolean isClearingRequired();
+  
 }

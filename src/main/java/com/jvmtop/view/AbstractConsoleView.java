@@ -73,7 +73,7 @@ public abstract class AbstractConsoleView implements ConsoleView
     {
       return "n/a";
     }
-    return "" + (bytes / 1024 / 1024) + "m";
+    return "" + (bytes / 1024 / 1024);
   }
 
   /**
@@ -194,4 +194,15 @@ public abstract class AbstractConsoleView implements ConsoleView
   {
     Thread.sleep(millis);
   }
+  
+  @Override
+  public boolean isTopBarRequired()
+  {
+      return true;
+  }
+  
+  @Override
+  public boolean isClearingRequired() {
+      return true;
+  }  
 }
