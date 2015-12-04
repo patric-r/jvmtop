@@ -13,3 +13,6 @@
 # Maven
 log/
 target/
+/bin/
+/lib/
+/.settings/
