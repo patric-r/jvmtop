@@ -1,7 +1,7 @@
 # Eclipse
 .classpath
 .project
-.settings/
+/.settings/*
 
 # Intellij
 .idea/
@@ -16,4 +16,3 @@ log/
 target/
 /bin/
 /lib/
-/.settings/
