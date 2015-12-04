@@ -243,7 +243,7 @@ public class JvmTop {
 	 *
 	 */
 	private void clearTerminal() {
-		if (System.getProperty("os.name").contains("Windows"))
+		if (System.getProperty("os.name").contains("Windows") && System.getenv("ANSICON") == null)
 			// hack
 			System.out.printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
 		else if (System.getProperty("jvmtop.altClear") != null)
