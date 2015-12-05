@@ -73,7 +73,7 @@ public abstract class AbstractConsoleView implements ConsoleView
     {
       return "n/a";
     }
-    return "" + (bytes / 1024 / 1024);
+    return "" + (bytes / 1000 / 1000);
   }
 
   /**
