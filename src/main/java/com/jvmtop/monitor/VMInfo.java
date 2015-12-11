@@ -161,6 +161,16 @@ public class VMInfo {
 	}
 
 	/**
+	 * @param vmid
+	 * @return
+	 * @throws Exception 
+	 */
+	public static VMInfo processNewVM(int vmid) throws Exception {
+		LocalVirtualMachine localVirtualMachine = LocalVirtualMachine.getLocalVirtualMachine(vmid);
+		return processNewVM(localVirtualMachine, vmid);
+	}
+	
+	/**
 	 * TODO: refactor to constructor?
 	 * 
 	 * @param vmMap
@@ -520,4 +530,5 @@ public class VMInfo {
 			return vmVer;
 		}
 	}
+
 }

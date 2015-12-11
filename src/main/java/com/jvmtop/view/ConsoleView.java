@@ -20,6 +20,8 @@
  */
 package com.jvmtop.view;
 
+import java.io.PrintStream;
+
 /**
  *
  * Defines a console view.
@@ -28,8 +30,11 @@ package com.jvmtop.view;
  *
  */
 public interface ConsoleView {
+	
+	public void setPrintStream(PrintStream printStream);
+	
 	/**
-	 * Prints the view to STDOUT.
+	 * Prints the view to PrintStream setted (default System.out)
 	 *
 	 * @throws Exception
 	 */

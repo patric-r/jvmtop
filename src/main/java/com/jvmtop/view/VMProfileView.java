@@ -20,9 +20,10 @@
  */
 package com.jvmtop.view;
 
+import static com.jvmtop.monitor.VMUtils.currentProcessID;
+
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
-import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.profiler.CPUSampler;
 import com.jvmtop.profiler.MethodStats;
 
@@ -40,9 +41,16 @@ public class VMProfileView extends AbstractConsoleView {
 
 	public VMProfileView(int vmid, Integer width) throws Exception {
 		super(width);
-		LocalVirtualMachine localVirtualMachine = LocalVirtualMachine.getLocalVirtualMachine(vmid);
-		vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
+		vmInfo_ = VMInfo.processNewVM(vmid);
 		cpuSampler_ = new CPUSampler(vmInfo_);
+	}
+
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	public VMProfileView() throws Exception {
+		this(currentProcessID(), null);
 	}
 
 	@Override
@@ -59,18 +67,18 @@ public class VMProfileView extends AbstractConsoleView {
 	@Override
 	public void printView() throws Exception {
 		if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR) {
-			System.out.println("ERROR: Could not fetch telemetries - Process terminated?");
+			printStream.println("ERROR: Could not fetch telemetries - Process terminated?");
 			exit();
 			return;
 		}
 		if (vmInfo_.getState() != VMInfoState.ATTACHED) {
-			System.out.println("ERROR: Could not attach to process.");
+			printStream.println("ERROR: Could not attach to process.");
 			exit();
 			return;
 		}
 
 		int w = width - 40;
-		System.out.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(), leftStr(vmInfo_.getDisplayName(), w));
+		printStream.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(), leftStr(vmInfo_.getDisplayName(), w));
 
 		// these are the spaces taken up by the formatting, the rest is usable
 		// for printing out the method name
@@ -78,7 +86,7 @@ public class VMProfileView extends AbstractConsoleView {
 		for (MethodStats stats : cpuSampler_.getTop(20)) {
 			double wallRatio = (double) stats.getHits().get() / cpuSampler_.getTotal() * 100;
 			if (!Double.isNaN(wallRatio))
-				System.out.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio / 100d * cpuSampler_.getUpdateCount() * 0.1d, shortFQN(stats.getClassName(), stats.getMethodName(), w));
+				printStream.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio / 100d * cpuSampler_.getUpdateCount() * 0.1d, shortFQN(stats.getClassName(), stats.getMethodName(), w));
 		}
 	}
 

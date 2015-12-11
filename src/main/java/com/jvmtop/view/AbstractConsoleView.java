@@ -20,14 +20,16 @@
  */
 package com.jvmtop.view;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Base class for all console views, providing some helper methods for
@@ -43,6 +45,8 @@ public abstract class AbstractConsoleView implements ConsoleView {
 	private boolean shouldExit_ = false;
 
 	protected final int width;
+
+	protected PrintStream printStream = System.out;
 
 	/**
 	 *
@@ -155,21 +159,21 @@ public abstract class AbstractConsoleView implements ConsoleView {
 	 * @param reverse
 	 * @return
 	 */
-	public Map sortByValue(Map map, boolean reverse) {
-		List list = new LinkedList(map.entrySet());
-		Collections.sort(list, new Comparator() {
+	public Map<Long, Long> sortByValue(Map<Long, Long> map, boolean reverse) {
+		Set<Entry<Long, Long>> entrySet = map.entrySet();
+		List<Entry<Long, Long>> list = new LinkedList<Entry<Long, Long>>(entrySet);
+		Collections.sort(list, new Comparator<Entry<Long, Long>>() {
 			@Override
-			public int compare(Object o1, Object o2) {
-				return ((Comparable) ((Map.Entry) (o1)).getValue()).compareTo(((Map.Entry) (o2)).getValue());
+			public int compare(Entry<Long, Long> entry1, Entry<Long, Long> entry2) {
+				return entry1.getValue().compareTo(entry2.getValue());
 			}
 		});
 
 		if (reverse)
 			Collections.reverse(list);
 
-		Map result = new LinkedHashMap();
-		for (Iterator it = list.iterator(); it.hasNext();) {
-			Map.Entry entry = (Map.Entry) it.next();
+		Map<Long, Long> result = new LinkedHashMap<Long, Long>();
+		for (Entry<Long, Long> entry : list) {
 			result.put(entry.getKey(), entry.getValue());
 		}
 		return result;
@@ -178,5 +182,13 @@ public abstract class AbstractConsoleView implements ConsoleView {
 	@Override
 	public void sleep(long millis) throws Exception {
 		Thread.sleep(millis);
+	}
+
+	public PrintStream getPrintStream() {
+		return printStream;
+	}
+
+	public void setPrintStream(PrintStream printStream) {
+		this.printStream = printStream;
 	}
 }

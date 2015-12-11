@@ -95,16 +95,16 @@ public class JvmTop {
 		logger = Logger.getLogger("jvmtop");
 
 		OptionParser parser = createOptionParser();
-		OptionSet a = parser.parse(args);
+		OptionSet optionSet = parser.parse(args);
 
-		if (a.has("help")) {
+		if (optionSet.has("help")) {
 			System.out.println("jvmtop - java monitoring for the command-line");
 			System.out.println("Usage: jvmtop.sh [options...] [PID]");
 			System.out.println("");
 			parser.printHelpOn(System.out);
 			System.exit(0);
 		}
-		boolean sysInfoOption = a.has("sysinfo");
+		boolean sysInfoOption = optionSet.has("sysinfo");
 
 		Integer pid = null;
 
@@ -112,9 +112,9 @@ public class JvmTop {
 
 		double delay = 1.0;
 
-		boolean profileMode = a.has("profile");
+		boolean profileMode = optionSet.has("profile");
 
-		Integer iterations = a.has("once") ? 1 : -1;
+		Integer iterations = optionSet.has("once") ? 1 : -1;
 
 		Integer threadlimit = null;
 
@@ -122,39 +122,39 @@ public class JvmTop {
 
 		Integer threadNameWidth = null;
 
-		if (a.hasArgument("delay")) {
-			delay = (Double) (a.valueOf("delay"));
+		if (optionSet.hasArgument("delay")) {
+			delay = (Double) (optionSet.valueOf("delay"));
 			if (delay < 0.1d)
 				throw new IllegalArgumentException("Delay cannot be set below 0.1");
 		}
 
-		if (a.hasArgument("n"))
-			iterations = (Integer) a.valueOf("n");
+		if (optionSet.hasArgument("n"))
+			iterations = (Integer) optionSet.valueOf("n");
 
 		// to support PID as non option argument
-		if (a.nonOptionArguments().size() > 0)
-			pid = Integer.valueOf((String) a.nonOptionArguments().get(0));
+		if (optionSet.nonOptionArguments().size() > 0)
+			pid = Integer.valueOf((String) optionSet.nonOptionArguments().get(0));
 
-		if (a.hasArgument("pid"))
-			pid = (Integer) a.valueOf("pid");
+		if (optionSet.hasArgument("pid"))
+			pid = (Integer) optionSet.valueOf("pid");
 
-		if (a.hasArgument("width"))
-			width = (Integer) a.valueOf("width");
+		if (optionSet.hasArgument("width"))
+			width = (Integer) optionSet.valueOf("width");
 
-		if (a.hasArgument("threadlimit"))
-			threadlimit = (Integer) a.valueOf("threadlimit");
+		if (optionSet.hasArgument("threadlimit"))
+			threadlimit = (Integer) optionSet.valueOf("threadlimit");
 
-		if (a.has("disable-threadlimit"))
+		if (optionSet.has("disable-threadlimit"))
 			threadLimitEnabled = false;
 
-		if (a.has("verbose")) {
+		if (optionSet.has("verbose")) {
 			fineLogging();
 			logger.setLevel(Level.ALL);
 			logger.fine("Verbosity mode.");
 		}
 
-		if (a.hasArgument("threadnamewidth"))
-			threadNameWidth = (Integer) a.valueOf("threadnamewidth");
+		if (optionSet.hasArgument("threadnamewidth"))
+			threadNameWidth = (Integer) optionSet.valueOf("threadnamewidth");
 
 		if (sysInfoOption)
 			outputSystemProps();
