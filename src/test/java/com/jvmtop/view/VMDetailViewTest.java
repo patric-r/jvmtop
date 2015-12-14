@@ -47,7 +47,7 @@ public class VMDetailViewTest {
 		view.setPrintStream(new PrintStream(outputStream));
 		view.printView();		
 		
-		System.out.println(outputStream);
+//		System.out.println(outputStream);
 		
 		assertTrue("Output doesn't contain current thread name", outputStream.toString().contains(threadName));
 	}
@@ -73,7 +73,9 @@ public class VMDetailViewTest {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		view.setPrintStream(new PrintStream(outputStream));
 		view.printView();		
-			
+		
+		System.out.println(outputStream);
+		
 		String[] lines = removeHeader(lines(outputStream));
 		for (int i = 0; i < lines.length-1; i++) {
 			assertTrue(lines[i] + " is less than " + lines[i+1], cpu(lines[i]) >= cpu(lines[i+1]));

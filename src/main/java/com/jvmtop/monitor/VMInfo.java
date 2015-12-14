@@ -369,7 +369,6 @@ public class VMInfo {
 			long deltaThreadCpuTime = 0;
 			if (previousThreadCPUMillis.containsKey(tid)) {
 				deltaThreadCpuTime = threadCpuTime - previousThreadCPUMillis.get(tid);
-
 				cpuTimeMap.put(tid, deltaThreadCpuTime);
 			}
 			newThreadCPUMillis.put(tid, threadCpuTime);

@@ -170,9 +170,13 @@ public class VMDetailView extends AbstractConsoleView {
 					break;
 				}
 				if (info != null)
-					printStream.printf(" %6d %-" + threadNameDisplayWidth_ + "s  %13s %5.2f%%    %5.2f%% %5s %n", tid, leftStr(info.getThreadName(), threadNameDisplayWidth_), info.getThreadState(),
+					printStream.printf(" %6d %-" + threadNameDisplayWidth_ + "s  %13s %5.2f%%    %5.2f%% %5s %n", 
+							tid, 
+							leftStr(info.getThreadName(), threadNameDisplayWidth_), 
+							info.getThreadState(),
 							getThreadCPUUtilization(cpuTimeMap.get(tid), vmInfo_.getDeltaUptime()),
-							getThreadCPUUtilization(vmInfo_.getThreadMXBean().getThreadCpuTime(tid), vmInfo_.getProxyClient().getProcessCpuTime(), 1), getBlockedThread(info));
+							getThreadCPUUtilization(vmInfo_.getThreadMXBean().getThreadCpuTime(tid), vmInfo_.getProxyClient().getProcessCpuTime(), 1), 
+							getBlockedThread(info));
 			}
 			if (someThreadsArentDisplayed)
 				printStream.printf(" Note: Only top %d threads (according cpu load) are shown!", numberOfDisplayedThreads_);
