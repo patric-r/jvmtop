@@ -52,8 +52,25 @@ public class VMDetailView extends AbstractConsoleView {
 
 	private boolean displayedThreadLimit_ = true;
 
+	private boolean printVMInfo = true;
+	
+	/**
+	 * @return the printVMInfo
+	 */
+	public boolean isPrintVMInfo() {
+		return printVMInfo;
+	}
+
+	/**
+	 * @param printVMInfo the printVMInfo to set
+	 */
+	public void setPrintVMInfo(boolean printVMInfo) {
+		this.printVMInfo = printVMInfo;
+	}
+
 	// TODO: refactor
 	private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
+
 
 	public VMDetailView(int vmid, Integer width) throws Exception {
 		super(width);
@@ -91,7 +108,9 @@ public class VMDetailView extends AbstractConsoleView {
 			return;
 		}
 
-		printVMInfo();
+		if (printVMInfo) {
+			printVMInfo();
+		}
 
 		printTopThreads();
 	}
