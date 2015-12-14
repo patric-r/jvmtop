@@ -217,13 +217,14 @@ public class JvmTop {
 	protected void run(ConsoleView view) throws Exception {
 		try (PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), false)) {
 			System.setOut(ps);
+			view.setPrintStream(ps);
 			int iterations = 0;
 			while (!view.shouldExit()) {
 				if (maxIterations_ > 1 || maxIterations_ == -1)
 					clearTerminal();
-				printTopBar();
+				printTopBar(ps);
 				view.printView();
-				System.out.flush();
+				ps.flush();
 				iterations++;
 				if (iterations >= maxIterations_ && maxIterations_ > 0)
 					break;
@@ -257,20 +258,21 @@ public class JvmTop {
 	}
 
 	/**
+	 * @param ps 
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 *
 	 */
-	private void printTopBar() {
-		System.out.printf(" JvmTop %s - %8tT, %6s, %2d cpus, %15.15s", VERSION, new Date(), localOSBean_.getArch(), localOSBean_.getAvailableProcessors(), localOSBean_.getName() + " "
+	private void printTopBar(PrintStream ps) {
+		ps.printf(" JvmTop %s - %8tT, %6s, %2d cpus, %15.15s", VERSION, new Date(), localOSBean_.getArch(), localOSBean_.getAvailableProcessors(), localOSBean_.getName() + " "
 				+ localOSBean_.getVersion());
 
 		if (supportSystemLoadAverage() && localOSBean_.getSystemLoadAverage() != -1)
-			System.out.printf(", load avg %3.2f%n", localOSBean_.getSystemLoadAverage());
+			ps.printf(", load avg %3.2f%n", localOSBean_.getSystemLoadAverage());
 		else
-			System.out.println();
-		System.out.println(" https://github.com/patric-r/jvmtop");
-		System.out.println();
+			ps.println();
+		ps.println(" https://github.com/patric-r/jvmtop");
+		ps.println();
 	}
 
 	private boolean supportSystemLoadAverage() {
