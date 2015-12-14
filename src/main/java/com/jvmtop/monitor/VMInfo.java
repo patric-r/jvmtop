@@ -31,7 +31,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.rmi.ConnectException;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -144,6 +146,10 @@ public class VMInfo {
 
 	private Map<String, String> systemProperties_;
 
+	private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
+
+	private Map<Long, Long> cpuTimeMap = new TreeMap<Long, Long>();
+	
 	/**
 	 * @param lastCPUProcessTime
 	 * @param proxyClient
@@ -207,8 +213,7 @@ public class VMInfo {
 	 * @throws InvocationTargetException
 	 * @throws Exception
 	 */
-	private static VMInfo attachToVM(LocalVirtualMachine localvm, int vmid) throws AttachNotSupportedException, IOException, NoSuchMethodException, IllegalAccessException,
-			InvocationTargetException, Exception {
+	private static VMInfo attachToVM(LocalVirtualMachine localvm, int vmid) throws Exception {
 		// VirtualMachine vm = VirtualMachine.attach("" + vmid);
 		try {
 
@@ -261,7 +266,7 @@ public class VMInfo {
 	 * @param localVm
 	 * @return
 	 */
-	public static VMInfo createDeadVM(int vmid, LocalVirtualMachine localVm, VMInfoState state) {
+	public static VMInfo createDeadVM(@SuppressWarnings("unused") int vmid, LocalVirtualMachine localVm, VMInfoState state) {
 		VMInfo vmInfo = new VMInfo();
 		vmInfo.state_ = state;
 		vmInfo.localVm_ = localVm;
@@ -347,6 +352,30 @@ public class VMInfo {
 		totalLoadedClassCount_ = classLoadingMXBean_.getTotalLoadedClassCount();
 
 		threadCount_ = threadMXBean.getThreadCount();
+		
+		updateThreadsStatistics();
+	}
+
+	/**
+	 * 
+	 */
+	private void updateThreadsStatistics() {
+		Map<Long, Long> newThreadCPUMillis = new HashMap<Long, Long>();
+
+		cpuTimeMap = new TreeMap<Long, Long>();
+
+		for (Long tid : getThreadMXBean().getAllThreadIds()) {
+			long threadCpuTime = getThreadMXBean().getThreadCpuTime(tid);
+			long deltaThreadCpuTime = 0;
+			if (previousThreadCPUMillis.containsKey(tid)) {
+				deltaThreadCpuTime = threadCpuTime - previousThreadCPUMillis.get(tid);
+
+				cpuTimeMap.put(tid, deltaThreadCpuTime);
+			}
+			newThreadCPUMillis.put(tid, threadCpuTime);
+		}
+
+		this.previousThreadCPUMillis = newThreadCPUMillis;
 	}
 
 	/**
@@ -520,15 +549,22 @@ public class VMInfo {
 
 		Pattern pattern = Pattern.compile("[0-9]\\.([0-9])\\.0_([0-9]+)-.*");
 		Matcher matcher = pattern.matcher(vmVer);
-		if (matcher.matches())
+		if (matcher.matches()) {
 			return vmVendor.charAt(0) + matcher.group(1) + "U" + matcher.group(2);
-		else {
-			pattern = Pattern.compile(".*-(.*)_.*");
-			matcher = pattern.matcher(vmVer);
-			if (matcher.matches())
-				return vmVendor.charAt(0) + matcher.group(1).substring(2, 6);
-			return vmVer;
-		}
+		} 
+		
+		pattern = Pattern.compile(".*-(.*)_.*");
+		matcher = pattern.matcher(vmVer);
+		if (matcher.matches())
+			return vmVendor.charAt(0) + matcher.group(1).substring(2, 6);
+		return vmVer;
+	}
+
+	/**
+	 * @return
+	 */
+	public Map<Long, Long> getCpuTimeMap() {
+		return cpuTimeMap;
 	}
 
 }

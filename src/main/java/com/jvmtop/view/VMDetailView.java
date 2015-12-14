@@ -25,10 +25,8 @@ import static com.jvmtop.monitor.VMUtils.currentProcessID;
 
 import java.lang.management.ThreadInfo;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
@@ -67,9 +65,6 @@ public class VMDetailView extends AbstractConsoleView {
 	public void setPrintVMInfo(boolean printVMInfo) {
 		this.printVMInfo = printVMInfo;
 	}
-
-	// TODO: refactor
-	private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
 
 
 	public VMDetailView(int vmid, Integer width) throws Exception {
@@ -161,40 +156,26 @@ public class VMDetailView extends AbstractConsoleView {
 	private void printTopThreads() throws Exception {
 		printStream.printf(" %6s %-" + threadNameDisplayWidth_ + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU", "TOTALCPU", "BLOCKEDBY");
 
+		boolean someThreadsArentDisplayed = false;
 		if (vmInfo_.getThreadMXBean().isThreadCpuTimeSupported()) {
 
-			// TODO: move this into VMInfo?
-			Map<Long, Long> newThreadCPUMillis = new HashMap<Long, Long>();
-
-			Map<Long, Long> cpuTimeMap = new TreeMap<Long, Long>();
-
-			for (Long tid : vmInfo_.getThreadMXBean().getAllThreadIds()) {
-				long threadCpuTime = vmInfo_.getThreadMXBean().getThreadCpuTime(tid);
-				long deltaThreadCpuTime = 0;
-				if (previousThreadCPUMillis.containsKey(tid)) {
-					deltaThreadCpuTime = threadCpuTime - previousThreadCPUMillis.get(tid);
-
-					cpuTimeMap.put(tid, deltaThreadCpuTime);
-				}
-				newThreadCPUMillis.put(tid, threadCpuTime);
-			}
-
-			cpuTimeMap = sortByValue(cpuTimeMap, true);
+			Map<Long, Long> cpuTimeMap = sortByValue(vmInfo_.getCpuTimeMap(), true);
 
 			int displayedThreads = 0;
 			for (Long tid : cpuTimeMap.keySet()) {
 				ThreadInfo info = vmInfo_.getThreadMXBean().getThreadInfo(tid);
 				displayedThreads++;
-				if (displayedThreads > numberOfDisplayedThreads_ && displayedThreadLimit_)
+				if (displayedThreads > numberOfDisplayedThreads_ && displayedThreadLimit_) {
+					someThreadsArentDisplayed = true;
 					break;
+				}
 				if (info != null)
 					printStream.printf(" %6d %-" + threadNameDisplayWidth_ + "s  %13s %5.2f%%    %5.2f%% %5s %n", tid, leftStr(info.getThreadName(), threadNameDisplayWidth_), info.getThreadState(),
 							getThreadCPUUtilization(cpuTimeMap.get(tid), vmInfo_.getDeltaUptime()),
 							getThreadCPUUtilization(vmInfo_.getThreadMXBean().getThreadCpuTime(tid), vmInfo_.getProxyClient().getProcessCpuTime(), 1), getBlockedThread(info));
 			}
-			if (newThreadCPUMillis.size() >= numberOfDisplayedThreads_ && displayedThreadLimit_)
+			if (someThreadsArentDisplayed)
 				printStream.printf(" Note: Only top %d threads (according cpu load) are shown!", numberOfDisplayedThreads_);
-			previousThreadCPUMillis = newThreadCPUMillis;
 		} else
 			printStream.printf("%n -Thread CPU telemetries are not available on the monitored jvm/platform-%n");
 	}

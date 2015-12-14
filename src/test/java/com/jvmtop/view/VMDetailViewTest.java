@@ -45,7 +45,6 @@ public class VMDetailViewTest {
 		
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		view.setPrintStream(new PrintStream(outputStream));
-		view.printView();
 		view.printView();		
 		
 		System.out.println(outputStream);
@@ -73,7 +72,6 @@ public class VMDetailViewTest {
 		
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		view.setPrintStream(new PrintStream(outputStream));
-		view.printView();
 		view.printView();		
 			
 		String[] lines = removeHeader(lines(outputStream));
