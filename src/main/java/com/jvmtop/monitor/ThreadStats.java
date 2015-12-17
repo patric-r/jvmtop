@@ -44,7 +44,7 @@ public class ThreadStats implements Comparable<ThreadStats>{
 		return this;
 	}
 	
-	public Long getThreadCpuTime() {
+	public Long getTotalThreadCpuTime() {
 		return totalThreadCpuTime_;
 	}
 
@@ -62,7 +62,7 @@ public class ThreadStats implements Comparable<ThreadStats>{
 	}
 
 	public String toString() {
-		return "" + getTid();
+		return "" + tid_;
 	}
 
 	@Override
@@ -72,19 +72,9 @@ public class ThreadStats implements Comparable<ThreadStats>{
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
+		if (obj == null || !(obj instanceof ThreadStats))
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ThreadStats other = (ThreadStats) obj;
-		if (getTid() == null) {
-			if (other.getTid() != null)
-				return false;
-		} else if (!getTid().equals(other.getTid()))
-			return false;
-		return true;
+		return tid_.equals(((ThreadStats)obj).tid_);
 	}
 
 }

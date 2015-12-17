@@ -29,8 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import com.jvmtop.monitor.ThreadStats;
 import com.jvmtop.monitor.VMInfo;
@@ -185,7 +183,7 @@ public class VMDetailView extends AbstractConsoleView {
 						leftStr(info.getThreadName(), threadNameDisplayWidth_), 
 						info.getThreadState(),
 						getThreadCPUUtilization(threadStats.getDeltaThreadCpuTime(), vmInfo_.getDeltaUptime()),
-						getThreadCPUUtilization(threadStats.getThreadCpuTime(), processCPUTime, 1), 
+						getThreadCPUUtilization(threadStats.getTotalThreadCpuTime(), processCPUTime, 1), 
 						getBlockedThread(info));
 		}
 		if (someThreadsArentDisplayed)
