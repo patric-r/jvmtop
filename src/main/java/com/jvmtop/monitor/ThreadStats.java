@@ -20,16 +20,26 @@
  */
 package com.jvmtop.monitor;
 
+import java.lang.management.ThreadInfo;
+
 public class ThreadStats implements Comparable<ThreadStats>{
 
 	private Long deltaThreadCpuTime_ = 0L;
 	private Long totalThreadCpuTime_ = 0L;
 	private final Long tid_;
+	private final VMInfo vmInfo_;
 
+	//For test only
 	public ThreadStats(Long tid) {
-		tid_ = tid;
+		this(tid, null);
 	}
 
+	public ThreadStats(Long tid, VMInfo vmInfo) {
+		tid_ = tid;
+		vmInfo_ = vmInfo;
+	}
+
+	
 	public ThreadStats setDeltaCPUTime(long deltaThreadCpuTime) {
 		deltaThreadCpuTime_ = deltaThreadCpuTime;
 		return this;
@@ -77,4 +87,25 @@ public class ThreadStats implements Comparable<ThreadStats>{
 		return tid_.equals(((ThreadStats)obj).tid_);
 	}
 
+	public double getDeltaThreadCPUUtilizationPercentage() {
+		return getUtilizationPercentage(getDeltaThreadCpuTime(), vmInfo_.getDeltaUptime());
+	}
+
+	public double getTotalThreadCPUUtilizationPercentage() {
+		return getUtilizationPercentage(getTotalThreadCpuTime(), vmInfo_.getProcessCPUTime(),  1);
+	}
+	
+	private double getUtilizationPercentage(long delta, long totalTime) {
+		return getUtilizationPercentage(delta, totalTime, 1000 * 1000);
+	}
+
+	private double getUtilizationPercentage(long delta, long totalTime, double factor) {
+		if (totalTime == 0)
+			return 0;
+		return delta / factor / totalTime * 100d;
+	}
+
+	public ThreadInfo getThreadInfo() {
+		return vmInfo_.getThreadMXBean().getThreadInfo(tid_);
+	}
 }

@@ -24,9 +24,7 @@ package com.jvmtop.view;
 import static com.jvmtop.monitor.VMUtils.currentProcessID;
 
 import java.lang.management.ThreadInfo;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -164,14 +162,12 @@ public class VMDetailView extends AbstractConsoleView {
 		
 		printStream_.printf(" %6s %-" + threadNameDisplayWidth_ + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU", "TOTALCPU", "BLOCKEDBY");
 	
-		List<ThreadStats> sortedThreadStats = new ArrayList<ThreadStats>(vmInfo_.getThreadStats().values());
-		Collections.sort(sortedThreadStats);
-
+		List<ThreadStats> sortedThreadStats = vmInfo_.getThreadInfoSortedByCPU();
+		
 		boolean someThreadsArentDisplayed = false;
 		int displayedThreads = 0;
-		long processCPUTime = vmInfo_.getProxyClient().getProcessCpuTime();
 		for (ThreadStats threadStats : sortedThreadStats) {
-			ThreadInfo info = vmInfo_.getThreadMXBean().getThreadInfo(threadStats.getTid());
+			ThreadInfo info = threadStats.getThreadInfo();
 			displayedThreads++;
 			if (displayedThreads > numberOfDisplayedThreads_ && displayedThreadLimit_) {
 				someThreadsArentDisplayed = true;
@@ -182,10 +178,11 @@ public class VMDetailView extends AbstractConsoleView {
 						threadStats.getTid(), 
 						leftStr(info.getThreadName(), threadNameDisplayWidth_), 
 						info.getThreadState(),
-						getThreadCPUUtilizationPercentage(threadStats.getDeltaThreadCpuTime(), vmInfo_.getDeltaUptime()),
-						getThreadCPUUtilization(threadStats.getTotalThreadCpuTime(), processCPUTime, 1), 
+						threadStats.getDeltaThreadCPUUtilizationPercentage(),
+						threadStats.getTotalThreadCPUUtilizationPercentage(), 
 						getBlockedThread(info));
 		}
+		
 		if (someThreadsArentDisplayed)
 			printStream_.printf(" Note: Only top %d threads (according cpu load) are shown!", numberOfDisplayedThreads_);
 	}
@@ -222,13 +219,4 @@ public class VMDetailView extends AbstractConsoleView {
 		this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
 	}
 
-	private double getThreadCPUUtilizationPercentage(long deltaThreadCpuTime, long totalTime) {
-		return getThreadCPUUtilization(deltaThreadCpuTime, totalTime, 1000 * 1000);
-	}
-
-	private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime, double factor) {
-		if (totalTime == 0)
-			return 0;
-		return deltaThreadCpuTime / factor / totalTime * 100d;
-	}
 }

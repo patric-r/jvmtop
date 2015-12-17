@@ -29,9 +29,12 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.ConnectException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -146,6 +149,8 @@ public class VMInfo {
 	private Map<String, String> systemProperties_;
 
 	private Map<Long, ThreadStats> previousThreadStatsMap_ = new HashMap<Long, ThreadStats>();
+
+	private long processCPUTime;
 	
 	/**
 	 * @param lastCPUProcessTime
@@ -172,6 +177,11 @@ public class VMInfo {
 		LocalVirtualMachine localVirtualMachine = LocalVirtualMachine.getLocalVirtualMachine(vmid);
 		return processNewVM(localVirtualMachine, vmid);
 	}
+	
+	public static VMInfo processCurrentVM() throws Exception {
+		return processNewVM(VMUtils.currentProcessID());
+	}
+
 	
 	/**
 	 * TODO: refactor to constructor?
@@ -345,6 +355,8 @@ public class VMInfo {
 		lastUpTime = uptime;
 		lastCPUTime = cpuTime;
 		lastGcTime = gcTime;
+		
+		processCPUTime = getProxyClient().getProcessCpuTime();
 
 		totalLoadedClassCount_ = classLoadingMXBean_.getTotalLoadedClassCount();
 
@@ -361,7 +373,7 @@ public class VMInfo {
 
 		for (Long tid : threadMXBean_.getAllThreadIds()) {
 			long threadCpuTime = threadMXBean_.getThreadCpuTime(tid);
-			ThreadStats newStats = new ThreadStats(tid);
+			ThreadStats newStats = new ThreadStats(tid, this);
 			ThreadStats oldStats = previousThreadStatsMap_.get(tid);
 			if (oldStats != null) {
 				newStats.setDeltaCPUTime(threadCpuTime - oldStats.getTotalThreadCpuTime());
@@ -514,6 +526,7 @@ public class VMInfo {
 		return osBean;
 	}
 
+	
 	public long getDeltaUptime() {
 		return deltaUptime_;
 	}
@@ -559,12 +572,15 @@ public class VMInfo {
 		return previousThreadStatsMap_;
 	}
 
-	/**
-	 * @return
-	 * @throws Exception 
-	 */
-	public static VMInfo processCurrentVM() throws Exception {
-		return processNewVM(VMUtils.currentProcessID());
+
+	public long getProcessCPUTime() {
+		return processCPUTime;
+	}
+
+	public List<ThreadStats> getThreadInfoSortedByCPU() {
+		List<ThreadStats> sortedThreadStats = new ArrayList<ThreadStats>(getThreadStats().values());
+		Collections.sort(sortedThreadStats);
+		return sortedThreadStats;
 	}
 
 }
