@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -112,7 +111,7 @@ public class VMInfo {
 
 	private MemoryUsage nonHeapMemoryUsage;
 
-	private ThreadMXBean threadMXBean;
+	private ThreadMXBean threadMXBean_;
 
 	private VMInfoState state_ = VMInfoState.INIT;
 
@@ -146,9 +145,7 @@ public class VMInfo {
 
 	private Map<String, String> systemProperties_;
 
-	private Map<Long, Long> previousThreadCPUMillis = new HashMap<Long, Long>();
-
-	private Map<Long, Long> cpuTimeMap = new TreeMap<Long, Long>();
+	private Map<Long, ThreadStats> previousThreadStatsMap_ = new HashMap<Long, ThreadStats>();
 	
 	/**
 	 * @param lastCPUProcessTime
@@ -304,7 +301,7 @@ public class VMInfo {
 			memoryMXBean = proxyClient.getMemoryMXBean();
 			heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
 			nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
-			threadMXBean = proxyClient.getThreadMXBean();
+			threadMXBean_ = proxyClient.getThreadMXBean();
 
 			// TODO: fetch jvm-constant data only once
 			systemProperties_ = runtimeMXBean.getSystemProperties();
@@ -312,7 +309,7 @@ public class VMInfo {
 			osUser_ = systemProperties_.get("user.name");
 			updateInternal();
 
-			deadlocksDetected_ = threadMXBean.findDeadlockedThreads() != null || threadMXBean.findMonitorDeadlockedThreads() != null;
+			deadlocksDetected_ = threadMXBean_.findDeadlockedThreads() != null || threadMXBean_.findMonitorDeadlockedThreads() != null;
 
 		} catch (Throwable e) {
 			Logger.getLogger("jvmtop").log(Level.FINE, "error during update", e);
@@ -351,7 +348,7 @@ public class VMInfo {
 
 		totalLoadedClassCount_ = classLoadingMXBean_.getTotalLoadedClassCount();
 
-		threadCount_ = threadMXBean.getThreadCount();
+		threadCount_ = threadMXBean_.getThreadCount();
 		
 		updateThreadsStatistics();
 	}
@@ -360,21 +357,20 @@ public class VMInfo {
 	 * 
 	 */
 	private void updateThreadsStatistics() {
-		Map<Long, Long> newThreadCPUMillis = new HashMap<Long, Long>();
+		Map<Long, ThreadStats> newThreadStatsMap = new HashMap<Long, ThreadStats>();	
 
-		cpuTimeMap = new TreeMap<Long, Long>();
-
-		for (Long tid : getThreadMXBean().getAllThreadIds()) {
-			long threadCpuTime = getThreadMXBean().getThreadCpuTime(tid);
-			long deltaThreadCpuTime = 0;
-			if (previousThreadCPUMillis.containsKey(tid)) {
-				deltaThreadCpuTime = threadCpuTime - previousThreadCPUMillis.get(tid);
-				cpuTimeMap.put(tid, deltaThreadCpuTime);
+		for (Long tid : threadMXBean_.getAllThreadIds()) {
+			long threadCpuTime = threadMXBean_.getThreadCpuTime(tid);
+			ThreadStats newStats = new ThreadStats(tid);
+			ThreadStats oldStats = previousThreadStatsMap_.get(tid);
+			if (oldStats != null) {
+				newStats.setDeltaCPUTime(threadCpuTime - oldStats.getThreadCpuTime());
 			}
-			newThreadCPUMillis.put(tid, threadCpuTime);
+			newStats.setTotalThreadCPUTime(threadCpuTime);
+			newThreadStatsMap.put(tid, newStats);
 		}
-
-		this.previousThreadCPUMillis = newThreadCPUMillis;
+		
+		previousThreadStatsMap_ = newThreadStatsMap;
 	}
 
 	/**
@@ -511,7 +507,7 @@ public class VMInfo {
 	}
 
 	public ThreadMXBean getThreadMXBean() {
-		return threadMXBean;
+		return threadMXBean_;
 	}
 
 	public OperatingSystemMXBean getOSBean() {
@@ -559,11 +555,8 @@ public class VMInfo {
 		return vmVer;
 	}
 
-	/**
-	 * @return
-	 */
-	public Map<Long, Long> getCpuTimeMap() {
-		return cpuTimeMap;
+	public Map<Long, ThreadStats> getThreadStats() {
+		return previousThreadStatsMap_;
 	}
 
 }

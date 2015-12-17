@@ -46,7 +46,7 @@ public abstract class AbstractConsoleView implements ConsoleView {
 
 	protected final int width;
 
-	protected PrintStream printStream = System.out;
+	protected PrintStream printStream_ = System.out;
 
 	/**
 	 *
@@ -86,9 +86,10 @@ public abstract class AbstractConsoleView implements ConsoleView {
 	 */
 	public String toHHMM(long millis) {
 		StringBuilder sb = new StringBuilder();
-		Formatter formatter = new Formatter(sb);
-		formatter.format("%2d:%2dm", millis / 1000 / 3600, (millis / 1000 / 60) % 60);
-		return sb.toString();
+		try(Formatter formatter = new Formatter(sb);) {
+			formatter.format("%2d:%2dm", millis / 1000 / 3600, (millis / 1000 / 60) % 60);
+			return sb.toString();
+		}
 	}
 
 	/**
@@ -185,10 +186,10 @@ public abstract class AbstractConsoleView implements ConsoleView {
 	}
 
 	public PrintStream getPrintStream() {
-		return printStream;
+		return printStream_;
 	}
 
 	public void setPrintStream(PrintStream printStream) {
-		this.printStream = printStream;
+		this.printStream_ = printStream;
 	}
 }

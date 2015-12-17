@@ -67,18 +67,18 @@ public class VMProfileView extends AbstractConsoleView {
 	@Override
 	public void printView() throws Exception {
 		if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR) {
-			printStream.println("ERROR: Could not fetch telemetries - Process terminated?");
+			printStream_.println("ERROR: Could not fetch telemetries - Process terminated?");
 			exit();
 			return;
 		}
 		if (vmInfo_.getState() != VMInfoState.ATTACHED) {
-			printStream.println("ERROR: Could not attach to process.");
+			printStream_.println("ERROR: Could not attach to process.");
 			exit();
 			return;
 		}
 
 		int w = width - 40;
-		printStream.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(), leftStr(vmInfo_.getDisplayName(), w));
+		printStream_.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(), leftStr(vmInfo_.getDisplayName(), w));
 
 		// these are the spaces taken up by the formatting, the rest is usable
 		// for printing out the method name
@@ -86,7 +86,7 @@ public class VMProfileView extends AbstractConsoleView {
 		for (MethodStats stats : cpuSampler_.getTop(20)) {
 			double wallRatio = (double) stats.getHits().get() / cpuSampler_.getTotal() * 100;
 			if (!Double.isNaN(wallRatio))
-				printStream.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio / 100d * cpuSampler_.getUpdateCount() * 0.1d, shortFQN(stats.getClassName(), stats.getMethodName(), w));
+				printStream_.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio / 100d * cpuSampler_.getUpdateCount() * 0.1d, shortFQN(stats.getClassName(), stats.getMethodName(), w));
 		}
 	}
 
