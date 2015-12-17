@@ -160,11 +160,20 @@ public class VMInfo {
 	 * @param vm
 	 * @throws RuntimeException
 	 */
+<<<<<<< HEAD
 	public VMInfo(ManagementInfoSource managementInfoSource, String displayName, int vmid) throws Exception {
 		super();
 		displayName_ = displayName;
 		rawId_ = vmid;
 		managementInfoSource_ = managementInfoSource;
+=======
+	public VMInfo(ProxyClient proxyClient, String displayName, int vmid) throws Exception {
+		super();
+		displayName_ = displayName;
+		rawId_ = vmid;
+		this.proxyClient = proxyClient;
+		// this.vm = vm;
+>>>>>>> ea189787360e00c51bc6efcec1c3e1c729de71c3
 		state_ = VMInfoState.ATTACHED;
 		update();
 	}
