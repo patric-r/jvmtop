@@ -23,6 +23,7 @@ package com.jvmtop;
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
@@ -54,7 +55,7 @@ import com.jvmtop.view.VMProfileView;
  */
 public class JvmTop {
 
-	public static final String VERSION = "0.8.0 alpha";
+	public static final String VERSION = "1.0.0 alpha";
 
 	private Double delay_ = 1.0;
 
@@ -100,13 +101,19 @@ public class JvmTop {
 		logger = Logger.getLogger("jvmtop");
 
 		OptionParser parser = createOptionParser();
-		OptionSet optionSet = parser.parse(args);
+		try {
+			parseAndRun(args, parser);
+		} catch (JvmTopException e) {
+			System.err.println(e.getMessage());
+			printHelp(parser);
+			System.exit(-1);
+		}
+	}
 
+	private static void parseAndRun(String[] args, OptionParser parser) throws IOException, Exception {
+		OptionSet optionSet = parser.parse(args);
 		if (optionSet.has("help")) {
-			System.out.println("jvmtop - java monitoring for the command-line");
-			System.out.println("Usage: jvmtop.sh [options...] [PID]");
-			System.out.println("");
-			parser.printHelpOn(System.out);
+			printHelp(parser);
 			System.exit(0);
 		}
 		boolean sysInfoOption = optionSet.has("sysinfo");
@@ -139,12 +146,14 @@ public class JvmTop {
 		if (optionSet.hasArgument("n"))
 			iterations = (Integer) optionSet.valueOf("n");
 
-		// to support PID as non option argument
-		if (optionSet.nonOptionArguments().size() > 0)
-			pid = Integer.valueOf((String) optionSet.nonOptionArguments().get(0));
 
-		if (optionSet.hasArgument("pid"))
+		if (optionSet.hasArgument("pid")) {
 			pid = (Integer) optionSet.valueOf("pid");
+		} else {
+			// to support PID as non option argument
+			if (optionSet.nonOptionArguments().size() > 0)
+				pid = safeValueOf((String) optionSet.nonOptionArguments().get(0));
+		}
 
 		if (optionSet.hasArgument("width"))
 			width = (Integer) optionSet.valueOf("width");
@@ -189,6 +198,26 @@ public class JvmTop {
 				jvmTop.run(vmDetailView);
 			}
 		}
+	}
+
+	/**
+	 * @param string
+	 * @return
+	 * @throws JvmTopException 
+	 */
+	private static Integer safeValueOf(String string) throws JvmTopException {
+		try {
+			return Integer.valueOf(string);
+		} catch (NumberFormatException e) {
+			throw new JvmTopException("Required integer parameter instead of" + string);
+		}
+	}
+
+	private static void printHelp(OptionParser parser) throws IOException {
+		System.out.println("jvmtop - java monitoring for the command-line");
+		System.out.println("Usage: jvmtop.sh [options...] [PID]");
+		System.out.println("");
+		parser.printHelpOn(System.out);
 	}
 
 	public int getMaxIterations() {
