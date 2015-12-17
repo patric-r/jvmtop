@@ -68,6 +68,10 @@ public class JvmTop {
 
 	private static Logger logger;
 
+	private boolean noANSITerminal_;
+
+	private boolean altClearRequired_;
+
 	private static OptionParser createOptionParser() {
 		OptionParser parser = new OptionParser();
 		parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }), "shows this help").forHelp();
@@ -79,7 +83,8 @@ public class JvmTop {
 		parser.accepts("verbose", "verbose mode");
 		parser.accepts("threadlimit", "sets the number of displayed threads in detail mode").withRequiredArg().ofType(Integer.class);
 		parser.accepts("disable-threadlimit", "displays all threads in detail mode");
-
+		parser.accepts("disable-printvminfo", "does not print VM infos in detail mode");
+		
 		parser.acceptsAll(Arrays.asList(new String[] { "p", "pid" }), "PID to connect to").withRequiredArg().ofType(Integer.class);
 
 		parser.acceptsAll(Arrays.asList(new String[] { "w", "width" }), "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
@@ -119,6 +124,9 @@ public class JvmTop {
 		Integer threadlimit = null;
 
 		boolean threadLimitEnabled = true;
+		
+		boolean printVMInfo = true;
+		
 
 		Integer threadNameWidth = null;
 
@@ -147,6 +155,10 @@ public class JvmTop {
 		if (optionSet.has("disable-threadlimit"))
 			threadLimitEnabled = false;
 
+		if (optionSet.has("disable-printvminfo"))
+			printVMInfo = false;
+
+		
 		if (optionSet.has("verbose")) {
 			fineLogging();
 			logger.setLevel(Level.ALL);
@@ -169,6 +181,7 @@ public class JvmTop {
 			else {
 				VMDetailView vmDetailView = new VMDetailView(pid, width);
 				vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
+				vmDetailView.setPrintVMInfo(printVMInfo);
 				if (threadlimit != null)
 					vmDetailView.setNumberOfDisplayedThreads(threadlimit);
 				if (threadNameWidth != null)
@@ -221,7 +234,7 @@ public class JvmTop {
 			int iterations = 0;
 			while (!view.shouldExit()) {
 				if (maxIterations_ > 1 || maxIterations_ == -1)
-					clearTerminal();
+					clearTerminal(ps);
 				printTopBar(ps);
 				view.printView();
 				ps.flush();
@@ -241,20 +254,23 @@ public class JvmTop {
 	}
 
 	/**
+	 * @param ps 
 	 *
 	 */
-	private void clearTerminal() {
-		if (System.getProperty("os.name").contains("Windows") && System.getenv("ANSICON") == null)
+	private void clearTerminal(PrintStream ps) {
+		if (noANSITerminal_)
 			// hack
-			System.out.printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
-		else if (System.getProperty("jvmtop.altClear") != null)
-			System.out.print('\f');
+			ps.printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
+		else if (altClearRequired_)
+			ps.print('\f');
 		else
-			System.out.print(CLEAR_TERMINAL_ANSI_CMD);
+			ps.print(CLEAR_TERMINAL_ANSI_CMD);
 	}
 
 	public JvmTop() {
 		localOSBean_ = ManagementFactory.getOperatingSystemMXBean();
+		noANSITerminal_ = System.getProperty("os.name").contains("Windows") && System.getenv("ANSICON") == null;
+		altClearRequired_ = System.getProperty("jvmtop.altClear") != null;
 	}
 
 	/**
