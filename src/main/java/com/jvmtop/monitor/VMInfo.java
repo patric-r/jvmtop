@@ -26,7 +26,6 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.ConnectException;
@@ -362,7 +361,6 @@ public class VMInfo {
 
 		for (Long tid : threadMXBean_.getAllThreadIds()) {
 			long threadCpuTime = threadMXBean_.getThreadCpuTime(tid);
-			ThreadInfo info = threadMXBean_.getThreadInfo(tid);
 			ThreadStats newStats = new ThreadStats(tid);
 			ThreadStats oldStats = previousThreadStatsMap_.get(tid);
 			if (oldStats != null) {
@@ -559,6 +557,14 @@ public class VMInfo {
 
 	public Map<Long, ThreadStats> getThreadStats() {
 		return previousThreadStatsMap_;
+	}
+
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public static VMInfo processCurrentVM() throws Exception {
+		return processNewVM(VMUtils.currentProcessID());
 	}
 
 }

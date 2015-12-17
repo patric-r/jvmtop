@@ -182,7 +182,7 @@ public class VMDetailView extends AbstractConsoleView {
 						threadStats.getTid(), 
 						leftStr(info.getThreadName(), threadNameDisplayWidth_), 
 						info.getThreadState(),
-						getThreadCPUUtilization(threadStats.getDeltaThreadCpuTime(), vmInfo_.getDeltaUptime()),
+						getThreadCPUUtilizationPercentage(threadStats.getDeltaThreadCpuTime(), vmInfo_.getDeltaUptime()),
 						getThreadCPUUtilization(threadStats.getTotalThreadCpuTime(), processCPUTime, 1), 
 						getBlockedThread(info));
 		}
@@ -222,7 +222,7 @@ public class VMDetailView extends AbstractConsoleView {
 		this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
 	}
 
-	private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime) {
+	private double getThreadCPUUtilizationPercentage(long deltaThreadCpuTime, long totalTime) {
 		return getThreadCPUUtilization(deltaThreadCpuTime, totalTime, 1000 * 1000);
 	}
 

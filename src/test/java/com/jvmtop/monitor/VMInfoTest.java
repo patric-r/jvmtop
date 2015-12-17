@@ -32,7 +32,7 @@ public class VMInfoTest {
 
 	@Test
 	public void shouldHaveStatisticsForAllActiveThreads() throws Exception {
-		VMInfo vmInfo = VMInfo.processNewVM(VMUtils.currentProcessID());
+		VMInfo vmInfo = VMInfo.processCurrentVM();
 		assertEquals(vmInfo.getThreadCount(), vmInfo.getThreadStats().size());
 	}
 
