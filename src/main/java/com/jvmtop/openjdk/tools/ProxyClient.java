@@ -96,7 +96,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
 import sun.rmi.server.UnicastRef2;
 import sun.rmi.transport.LiveRef;
 
-public class ProxyClient {
+public class ProxyClient implements ManagementInfoSource {
 
 	private ConnectionState connectionState = ConnectionState.DISCONNECTED;
 

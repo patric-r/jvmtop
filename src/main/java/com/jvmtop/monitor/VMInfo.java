@@ -42,9 +42,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.jvmtop.openjdk.tools.ConnectionState;
+import com.jvmtop.openjdk.tools.LocalManagementInfoSource;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
+import com.jvmtop.openjdk.tools.ManagementInfoSource;
 import com.jvmtop.openjdk.tools.ProxyClient;
-import com.sun.tools.attach.AttachNotSupportedException;
+//import com.sun.tools.attach.AttachNotSupportedException;
 
 /**
  * VMInfo retrieves or updates the metrics for a specific remote jvm, using
@@ -86,9 +88,7 @@ public class VMInfo {
 		}
 	}
 
-	private ProxyClient proxyClient = null;
-
-	// private VirtualMachine vm = null;
+	private ManagementInfoSource managementInfoSource_ = null;
 
 	private OperatingSystemMXBean osBean;
 
@@ -118,9 +118,9 @@ public class VMInfo {
 
 	private VMInfoState state_ = VMInfoState.INIT;
 
-	private String rawId_ = null;
+	private Integer rawId_ = null;
 
-	private LocalVirtualMachine localVm_;
+//	private LocalVirtualMachine localVm_;
 
 	public static final Comparator<VMInfo> USED_HEAP_COMPARATOR = new UsedHeapComparator();
 
@@ -151,19 +151,20 @@ public class VMInfo {
 	private Map<Long, ThreadStats> previousThreadStatsMap_ = new HashMap<Long, ThreadStats>();
 
 	private long processCPUTime;
+
+	private String displayName_;
 	
 	/**
 	 * @param lastCPUProcessTime
-	 * @param proxyClient
+	 * @param managementInfoSource
 	 * @param vm
 	 * @throws RuntimeException
 	 */
-	public VMInfo(ProxyClient proxyClient, LocalVirtualMachine localVm, String rawId) throws Exception {
+	public VMInfo(ManagementInfoSource managementInfoSource, String displayName, int vmid) throws Exception {
 		super();
-		localVm_ = localVm;
-		rawId_ = rawId;
-		this.proxyClient = proxyClient;
-		// this.vm = vm;
+		displayName_ = displayName;
+		rawId_ = vmid;
+		managementInfoSource_ = managementInfoSource;
 		state_ = VMInfoState.ATTACHED;
 		update();
 	}
@@ -179,7 +180,7 @@ public class VMInfo {
 	}
 	
 	public static VMInfo processCurrentVM() throws Exception {
-		return processNewVM(VMUtils.currentProcessID());
+		return new VMInfo(new LocalManagementInfoSource(), "currentVM", VMUtils.currentProcessID());
 	}
 
 	
@@ -193,7 +194,6 @@ public class VMInfo {
 	 * @return
 	 */
 	public static VMInfo processNewVM(LocalVirtualMachine localvm, int vmid) {
-
 		try {
 			if (localvm == null || !localvm.isAttachable()) {
 				Logger.getLogger("jvmtop").log(Level.FINE, "jvm is not attachable (PID=" + vmid + ")");
@@ -230,7 +230,7 @@ public class VMInfo {
 				Logger.getLogger("jvmtop").log(Level.FINE, "connection refused (PID=" + vmid + ")");
 				return createDeadVM(vmid, localvm);
 			}
-			return new VMInfo(proxyClient, localvm, vmid + "");
+			return new VMInfo(proxyClient, localvm.displayName(), vmid);
 		} catch (ConnectException rmiE) {
 			if (rmiE.getMessage().contains("refused")) {
 				Logger.getLogger("jvmtop").log(Level.FINE, "connection refused (PID=" + vmid + ")", rmiE);
@@ -238,7 +238,7 @@ public class VMInfo {
 			}
 			rmiE.printStackTrace(System.err);
 		} catch (IOException e) {
-			if ((e.getCause() != null && e.getCause() instanceof AttachNotSupportedException) || e.getMessage().contains("Permission denied")) {
+			if ((e.getCause() != null && e.getCause().toString().contains("AttachNotSupportedException")) || e.getMessage().contains("Permission denied")) {
 				Logger.getLogger("jvmtop").log(Level.FINE, "could not attach (PID=" + vmid + ")", e);
 				return createDeadVM(vmid, localvm, VMInfoState.CONNECTION_REFUSED);
 			}
@@ -273,10 +273,11 @@ public class VMInfo {
 	 * @param localVm
 	 * @return
 	 */
-	public static VMInfo createDeadVM(@SuppressWarnings("unused") int vmid, LocalVirtualMachine localVm, VMInfoState state) {
+	public static VMInfo createDeadVM(int vmid, LocalVirtualMachine localVm, VMInfoState state) {
 		VMInfo vmInfo = new VMInfo();
 		vmInfo.state_ = state;
-		vmInfo.localVm_ = localVm;
+		vmInfo.displayName_ = localVm.displayName();
+		vmInfo.rawId_ = vmid;
 		return vmInfo;
 	}
 
@@ -296,22 +297,22 @@ public class VMInfo {
 		if (state_ == VMInfoState.ERROR_DURING_ATTACH || state_ == VMInfoState.DETACHED || state_ == VMInfoState.CONNECTION_REFUSED)
 			return;
 
-		if (proxyClient.isDead()) {
+		if (managementInfoSource_.isDead()) {
 			state_ = VMInfoState.DETACHED;
 			return;
 		}
 
 		try {
-			proxyClient.flush();
+			managementInfoSource_.flush();
+			osBean = managementInfoSource_.getSunOperatingSystemMXBean();
+			runtimeMXBean = managementInfoSource_.getRuntimeMXBean();
+			gcMXBeans = managementInfoSource_.getGarbageCollectorMXBeans();
+			classLoadingMXBean_ = managementInfoSource_.getClassLoadingMXBean();
+			memoryMXBean = managementInfoSource_.getMemoryMXBean();
+			threadMXBean_ = managementInfoSource_.getThreadMXBean();
 
-			osBean = proxyClient.getSunOperatingSystemMXBean();
-			runtimeMXBean = proxyClient.getRuntimeMXBean();
-			gcMXBeans = proxyClient.getGarbageCollectorMXBeans();
-			classLoadingMXBean_ = proxyClient.getClassLoadingMXBean();
-			memoryMXBean = proxyClient.getMemoryMXBean();
 			heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
 			nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
-			threadMXBean_ = proxyClient.getThreadMXBean();
 
 			// TODO: fetch jvm-constant data only once
 			systemProperties_ = runtimeMXBean.getSystemProperties();
@@ -339,7 +340,7 @@ public class VMInfo {
 	private void updateInternal() throws Exception {
 		long uptime = runtimeMXBean.getUptime();
 
-		long cpuTime = proxyClient.getProcessCpuTime();
+		long cpuTime = managementInfoSource_.getProcessCpuTime();
 		// long cpuTime = osBean.getProcessCpuTime();
 		long gcTime = sumGCTimes();
 		gcCount = sumGCCount();
@@ -467,20 +468,20 @@ public class VMInfo {
 	/**
 	 * @return the proxyClient
 	 */
-	public ProxyClient getProxyClient() {
-		return proxyClient;
+	public ManagementInfoSource getProxyClient() {
+		return managementInfoSource_;
 	}
 
 	public String getDisplayName() {
-		return localVm_.displayName();
+		return displayName_;
 	}
 
 	public Integer getId() {
-		return localVm_.vmid();
+		return rawId_;
 	}
 
 	public String getRawId() {
-		return rawId_;
+		return "" + rawId_;
 	}
 
 	public long getGcCount() {
