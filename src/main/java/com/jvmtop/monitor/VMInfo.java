@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
 import com.jvmtop.openjdk.tools.ConnectionState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.openjdk.tools.ProxyClient;
-import com.sun.tools.attach.AttachNotSupportedException;
+//import com.sun.tools.attach.AttachNotSupportedException;
 
 /**
  * VMInfo retrieves or updates the metrics for a specific remote jvm, using
@@ -118,9 +118,9 @@ public class VMInfo {
 
 	private VMInfoState state_ = VMInfoState.INIT;
 
-	private String rawId_ = null;
+	private Integer rawId_ = null;
 
-	private LocalVirtualMachine localVm_;
+//	private LocalVirtualMachine localVm_;
 
 	public static final Comparator<VMInfo> USED_HEAP_COMPARATOR = new UsedHeapComparator();
 
@@ -151,6 +151,8 @@ public class VMInfo {
 	private Map<Long, ThreadStats> previousThreadStatsMap_ = new HashMap<Long, ThreadStats>();
 
 	private long processCPUTime;
+
+	private String displayName_;
 	
 	/**
 	 * @param lastCPUProcessTime
@@ -158,10 +160,10 @@ public class VMInfo {
 	 * @param vm
 	 * @throws RuntimeException
 	 */
-	public VMInfo(ProxyClient proxyClient, LocalVirtualMachine localVm, String rawId) throws Exception {
+	public VMInfo(ProxyClient proxyClient, String displayName, int vmid) throws Exception {
 		super();
-		localVm_ = localVm;
-		rawId_ = rawId;
+		displayName_ = displayName;
+		rawId_ = vmid;
 		this.proxyClient = proxyClient;
 		// this.vm = vm;
 		state_ = VMInfoState.ATTACHED;
@@ -230,7 +232,7 @@ public class VMInfo {
 				Logger.getLogger("jvmtop").log(Level.FINE, "connection refused (PID=" + vmid + ")");
 				return createDeadVM(vmid, localvm);
 			}
-			return new VMInfo(proxyClient, localvm, vmid + "");
+			return new VMInfo(proxyClient, localvm.displayName(), vmid);
 		} catch (ConnectException rmiE) {
 			if (rmiE.getMessage().contains("refused")) {
 				Logger.getLogger("jvmtop").log(Level.FINE, "connection refused (PID=" + vmid + ")", rmiE);
@@ -238,7 +240,7 @@ public class VMInfo {
 			}
 			rmiE.printStackTrace(System.err);
 		} catch (IOException e) {
-			if ((e.getCause() != null && e.getCause() instanceof AttachNotSupportedException) || e.getMessage().contains("Permission denied")) {
+			if ((e.getCause() != null && e.getCause().toString().contains("AttachNotSupportedException")) || e.getMessage().contains("Permission denied")) {
 				Logger.getLogger("jvmtop").log(Level.FINE, "could not attach (PID=" + vmid + ")", e);
 				return createDeadVM(vmid, localvm, VMInfoState.CONNECTION_REFUSED);
 			}
@@ -273,10 +275,11 @@ public class VMInfo {
 	 * @param localVm
 	 * @return
 	 */
-	public static VMInfo createDeadVM(@SuppressWarnings("unused") int vmid, LocalVirtualMachine localVm, VMInfoState state) {
+	public static VMInfo createDeadVM(int vmid, LocalVirtualMachine localVm, VMInfoState state) {
 		VMInfo vmInfo = new VMInfo();
 		vmInfo.state_ = state;
-		vmInfo.localVm_ = localVm;
+		vmInfo.displayName_ = localVm.displayName();
+		vmInfo.rawId_ = vmid;
 		return vmInfo;
 	}
 
@@ -472,15 +475,15 @@ public class VMInfo {
 	}
 
 	public String getDisplayName() {
-		return localVm_.displayName();
+		return displayName_;
 	}
 
 	public Integer getId() {
-		return localVm_.vmid();
+		return rawId_;
 	}
 
 	public String getRawId() {
-		return rawId_;
+		return "" + rawId_;
 	}
 
 	public long getGcCount() {
