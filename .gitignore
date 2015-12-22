@@ -16,3 +16,5 @@ log/
 target/
 /bin/
 /lib/
+/jvmtop_lib.jar
+/jvmtop_lib.jardesc
