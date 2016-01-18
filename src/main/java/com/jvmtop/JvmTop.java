@@ -53,289 +53,357 @@ import com.jvmtop.view.VMProfileView;
  * @author paru
  *
  */
-public class JvmTop {
+public class JvmTop
+{
 
-	public static final String VERSION = "1.0.0 alpha";
+  public static final String                         VERSION                 = "1.0.0 alpha";
 
-	private Double delay_ = 1.0;
+  private Double                                     delay_                  = 1.0;
 
-	private Boolean supportsSystemAverage_;
+  private Boolean                                    supportsSystemAverage_;
 
-	private java.lang.management.OperatingSystemMXBean localOSBean_;
+  private java.lang.management.OperatingSystemMXBean localOSBean_;
 
-	private final static String CLEAR_TERMINAL_ANSI_CMD = new String(new byte[] { (byte) 0x1b, (byte) 0x5b, (byte) 0x32, (byte) 0x4a, (byte) 0x1b, (byte) 0x5b, (byte) 0x48 });
+  private final static String                        CLEAR_TERMINAL_ANSI_CMD = new String(
+      new byte[] { (byte) 0x1b, (byte) 0x5b, (byte) 0x32, (byte) 0x4a,
+          (byte) 0x1b, (byte) 0x5b, (byte) 0x48 });
 
-	private int maxIterations_ = -1;
+  private int                                        maxIterations_          = -1;
 
-	private static Logger logger;
+  private static Logger                              logger;
 
-	private boolean noANSITerminal_;
+  private boolean                                    noANSITerminal_;
 
-	private boolean altClearRequired_;
+  private boolean                                    altClearRequired_;
 
-	private static OptionParser createOptionParser() {
-		OptionParser parser = new OptionParser();
-		parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }), "shows this help").forHelp();
-		parser.accepts("once", "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
-		parser.acceptsAll(Arrays.asList(new String[] { "n", "iteration" }), "jvmtop will exit after n output iterations").withRequiredArg().ofType(Integer.class);
-		parser.acceptsAll(Arrays.asList(new String[] { "d", "delay" }), "delay between each output iteration").withRequiredArg().ofType(Double.class);
-		parser.accepts("profile", "start CPU profiling at the specified jvm");
-		parser.accepts("sysinfo", "outputs diagnostic information");
-		parser.accepts("verbose", "verbose mode");
-		parser.accepts("threadlimit", "sets the number of displayed threads in detail mode").withRequiredArg().ofType(Integer.class);
-		parser.accepts("disable-threadlimit", "displays all threads in detail mode");
-		parser.accepts("disable-printvminfo", "does not print VM infos in detail mode");
-		
-		parser.acceptsAll(Arrays.asList(new String[] { "p", "pid" }), "PID to connect to").withRequiredArg().ofType(Integer.class);
+  private static OptionParser createOptionParser()
+  {
+    OptionParser parser = new OptionParser();
+    parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }),
+        "shows this help").forHelp();
+    parser.accepts("once",
+        "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
+    parser
+        .acceptsAll(Arrays.asList(new String[] { "n", "iteration" }),
+            "jvmtop will exit after n output iterations")
+        .withRequiredArg().ofType(Integer.class);
+    parser
+        .acceptsAll(Arrays.asList(new String[] { "d", "delay" }),
+            "delay between each output iteration")
+        .withRequiredArg().ofType(Double.class);
+    parser.accepts("profile", "start CPU profiling at the specified jvm");
+    parser.accepts("sysinfo", "outputs diagnostic information");
+    parser.accepts("verbose", "verbose mode");
+    parser
+        .accepts("threadlimit",
+            "sets the number of displayed threads in detail mode")
+        .withRequiredArg().ofType(Integer.class);
+    parser.accepts("disable-threadlimit",
+        "displays all threads in detail mode");
+    parser.accepts("disable-printvminfo",
+        "does not print VM infos in detail mode");
 
-		parser.acceptsAll(Arrays.asList(new String[] { "w", "width" }), "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
+    parser.acceptsAll(Arrays.asList(new String[] { "p", "pid" }),
+        "PID to connect to").withRequiredArg().ofType(Integer.class);
 
-		parser.accepts("threadnamewidth", "sets displayed thread name length in detail mode (defaults to 30)").withRequiredArg().ofType(Integer.class);
+    parser
+        .acceptsAll(Arrays.asList(new String[] { "w", "width" }),
+            "Width in columns for the console display")
+        .withRequiredArg().ofType(Integer.class);
 
-		return parser;
-	}
+    parser
+        .accepts("threadnamewidth",
+            "sets displayed thread name length in detail mode (defaults to 30)")
+        .withRequiredArg().ofType(Integer.class);
 
-	public static void main(String[] args) throws Exception {
-		Locale.setDefault(Locale.US);
+    return parser;
+  }
 
-		logger = Logger.getLogger("jvmtop");
+  public static void main(String[] args) throws Exception
+  {
+    Locale.setDefault(Locale.US);
 
-		OptionParser parser = createOptionParser();
-		try {
-			parseAndRun(args, parser);
-		} catch (JvmTopException e) {
-			System.err.println(e.getMessage());
-			printHelp(parser);
-			System.exit(-1);
-		}
-	}
+    logger = Logger.getLogger("jvmtop");
 
-	private static void parseAndRun(String[] args, OptionParser parser) throws IOException, Exception {
-		OptionSet optionSet = parser.parse(args);
-		if (optionSet.has("help")) {
-			printHelp(parser);
-			System.exit(0);
-		}
-		boolean sysInfoOption = optionSet.has("sysinfo");
+    OptionParser parser = createOptionParser();
+    try
+    {
+      parseAndRun(args, parser);
+    }
+    catch (JvmTopException e)
+    {
+      System.err.println(e.getMessage());
+      printHelp(parser);
+      System.exit(-1);
+    }
+  }
 
-		Integer pid = null;
+  private static void parseAndRun(String[] args, OptionParser parser)
+      throws IOException, Exception
+  {
+    OptionSet optionSet = parser.parse(args);
+    if (optionSet.has("help"))
+    {
+      printHelp(parser);
+      System.exit(0);
+    }
+    boolean sysInfoOption = optionSet.has("sysinfo");
 
-		Integer width = null;
+    Integer pid = null;
 
-		double delay = 1.0;
+    Integer width = null;
 
-		boolean profileMode = optionSet.has("profile");
+    double delay = 1.0;
 
-		Integer iterations = optionSet.has("once") ? 1 : -1;
+    boolean profileMode = optionSet.has("profile");
 
-		Integer threadlimit = null;
+    Integer iterations = optionSet.has("once") ? 1 : -1;
 
-		boolean threadLimitEnabled = true;
-		
-		boolean printVMInfo = true;
-		
+    Integer threadlimit = null;
 
-		Integer threadNameWidth = null;
+    boolean threadLimitEnabled = true;
 
-		if (optionSet.hasArgument("delay")) {
-			delay = (Double) (optionSet.valueOf("delay"));
-			if (delay < 0.1d)
-				throw new IllegalArgumentException("Delay cannot be set below 0.1");
-		}
+    boolean printVMInfo = true;
 
-		if (optionSet.hasArgument("n"))
-			iterations = (Integer) optionSet.valueOf("n");
+    Integer threadNameWidth = null;
 
+    if (optionSet.hasArgument("delay"))
+    {
+      delay = (Double) (optionSet.valueOf("delay"));
+      if (delay < 0.1d)
+        throw new IllegalArgumentException("Delay cannot be set below 0.1");
+    }
 
-		if (optionSet.hasArgument("pid")) {
-			pid = (Integer) optionSet.valueOf("pid");
-		} else {
-			// to support PID as non option argument
-			if (optionSet.nonOptionArguments().size() > 0)
-				pid = safeValueOf((String) optionSet.nonOptionArguments().get(0));
-		}
+    if (optionSet.hasArgument("n"))
+      iterations = (Integer) optionSet.valueOf("n");
 
-		if (optionSet.hasArgument("width"))
-			width = (Integer) optionSet.valueOf("width");
+    if (optionSet.hasArgument("pid"))
+    {
+      pid = (Integer) optionSet.valueOf("pid");
+    }
+    else
+    {
+      // to support PID as non option argument
+      if (optionSet.nonOptionArguments().size() > 0)
+        pid = safeValueOf((String) optionSet.nonOptionArguments().get(0));
+    }
 
-		if (optionSet.hasArgument("threadlimit"))
-			threadlimit = (Integer) optionSet.valueOf("threadlimit");
+    if (optionSet.hasArgument("width"))
+      width = (Integer) optionSet.valueOf("width");
 
-		if (optionSet.has("disable-threadlimit"))
-			threadLimitEnabled = false;
+    if (optionSet.hasArgument("threadlimit"))
+      threadlimit = (Integer) optionSet.valueOf("threadlimit");
 
-		if (optionSet.has("disable-printvminfo"))
-			printVMInfo = false;
+    if (optionSet.has("disable-threadlimit"))
+      threadLimitEnabled = false;
 
-		
-		if (optionSet.has("verbose")) {
-			fineLogging();
-			logger.setLevel(Level.ALL);
-			logger.fine("Verbosity mode.");
-		}
+    if (optionSet.has("disable-printvminfo"))
+      printVMInfo = false;
 
-		if (optionSet.hasArgument("threadnamewidth"))
-			threadNameWidth = (Integer) optionSet.valueOf("threadnamewidth");
+    if (optionSet.has("verbose"))
+    {
+      fineLogging();
+      logger.setLevel(Level.ALL);
+      logger.fine("Verbosity mode.");
+    }
 
-		if (sysInfoOption)
-			outputSystemProps();
-		else {
-			JvmTop jvmTop = new JvmTop();
-			jvmTop.setDelay(delay);
-			jvmTop.setMaxIterations(iterations);
-			if (pid == null)
-				jvmTop.run(new VMOverviewView(width));
-			else if (profileMode)
-				jvmTop.run(new VMProfileView(pid, width));
-			else {
-				VMDetailView vmDetailView = new VMDetailView(pid, width);
-				vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
-				vmDetailView.setPrintVMInfo(printVMInfo);
-				if (threadlimit != null)
-					vmDetailView.setNumberOfDisplayedThreads(threadlimit);
-				if (threadNameWidth != null)
-					vmDetailView.setThreadNameDisplayWidth(threadNameWidth);
-				jvmTop.run(vmDetailView);
-			}
-		}
-	}
+    if (optionSet.hasArgument("threadnamewidth"))
+      threadNameWidth = (Integer) optionSet.valueOf("threadnamewidth");
 
-	/**
-	 * @param string
-	 * @return
-	 * @throws JvmTopException 
-	 */
-	private static Integer safeValueOf(String string) throws JvmTopException {
-		try {
-			return Integer.valueOf(string);
-		} catch (NumberFormatException e) {
-			throw new JvmTopException("Required integer parameter instead of" + string);
-		}
-	}
+    if (sysInfoOption)
+      outputSystemProps();
+    else
+    {
+      JvmTop jvmTop = new JvmTop();
+      jvmTop.setDelay(delay);
+      jvmTop.setMaxIterations(iterations);
+      if (pid == null)
+        jvmTop.run(new VMOverviewView(width));
+      else if (profileMode)
+        jvmTop.run(new VMProfileView(pid, width));
+      else
+      {
+        VMDetailView vmDetailView = new VMDetailView(pid, width);
+        vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
+        vmDetailView.setPrintVMInfo(printVMInfo);
+        if (threadlimit != null)
+          vmDetailView.setNumberOfDisplayedThreads(threadlimit);
+        if (threadNameWidth != null)
+          vmDetailView.setThreadNameDisplayWidth(threadNameWidth);
+        jvmTop.run(vmDetailView);
+      }
+    }
+  }
 
-	private static void printHelp(OptionParser parser) throws IOException {
-		System.out.println("jvmtop - java monitoring for the command-line");
-		System.out.println("Usage: jvmtop.sh [options...] [PID]");
-		System.out.println("");
-		parser.printHelpOn(System.out);
-	}
+  /**
+   * @param string
+   * @return
+   * @throws JvmTopException 
+   */
+  private static Integer safeValueOf(String string) throws JvmTopException
+  {
+    try
+    {
+      return Integer.valueOf(string);
+    }
+    catch (NumberFormatException e)
+    {
+      throw new JvmTopException(
+          "Required integer parameter instead of" + string);
+    }
+  }
 
-	public int getMaxIterations() {
-		return maxIterations_;
-	}
+  private static void printHelp(OptionParser parser) throws IOException
+  {
+    System.out.println("jvmtop - java monitoring for the command-line");
+    System.out.println("Usage: jvmtop.sh [options...] [PID]");
+    System.out.println("");
+    parser.printHelpOn(System.out);
+  }
 
-	public void setMaxIterations(int iterations) {
-		maxIterations_ = iterations;
-	}
+  public int getMaxIterations()
+  {
+    return maxIterations_;
+  }
 
-	private static void fineLogging() {
-		// get the top Logger:
-		Logger topLogger = java.util.logging.Logger.getLogger("");
+  public void setMaxIterations(int iterations)
+  {
+    maxIterations_ = iterations;
+  }
 
-		// Handler for console (reuse it if it already exists)
-		Handler consoleHandler = null;
-		// see if there is already a console handler
-		for (Handler handler : topLogger.getHandlers())
-			if (handler instanceof ConsoleHandler) {
-				// found the console handler
-				consoleHandler = handler;
-				break;
-			}
+  private static void fineLogging()
+  {
+    // get the top Logger:
+    Logger topLogger = java.util.logging.Logger.getLogger("");
 
-		if (consoleHandler == null) {
-			// there was no console handler found, create a new one
-			consoleHandler = new ConsoleHandler();
-			topLogger.addHandler(consoleHandler);
-		}
-		// set the console handler to fine:
-		consoleHandler.setLevel(java.util.logging.Level.FINEST);
-	}
+    // Handler for console (reuse it if it already exists)
+    Handler consoleHandler = null;
+    // see if there is already a console handler
+    for (Handler handler : topLogger.getHandlers())
+      if (handler instanceof ConsoleHandler)
+      {
+        // found the console handler
+        consoleHandler = handler;
+        break;
+      }
 
-	private static void outputSystemProps() {
-		for (Object key : System.getProperties().keySet())
-			System.out.println(key + "=" + System.getProperty(key + ""));
-	}
+    if (consoleHandler == null)
+    {
+      // there was no console handler found, create a new one
+      consoleHandler = new ConsoleHandler();
+      topLogger.addHandler(consoleHandler);
+    }
+    // set the console handler to fine:
+    consoleHandler.setLevel(java.util.logging.Level.FINEST);
+  }
 
-	protected void run(ConsoleView view) throws Exception {
-		try (PrintStream ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), false)) {
-			System.setOut(ps);
-			view.setPrintStream(ps);
-			int iterations = 0;
-			while (!view.shouldExit()) {
-				if (maxIterations_ > 1 || maxIterations_ == -1)
-					clearTerminal(ps);
-				printTopBar(ps);
-				view.printView();
-				ps.flush();
-				iterations++;
-				if (iterations >= maxIterations_ && maxIterations_ > 0)
-					break;
-				view.sleep((int) (delay_ * 1000));
-			}
-		} catch (NoClassDefFoundError e) {
-			e.printStackTrace(System.err);
+  private static void outputSystemProps()
+  {
+    for (Object key : System.getProperties().keySet())
+      System.out.println(key + "=" + System.getProperty(key + ""));
+  }
 
-			System.err.println("");
-			System.err.println("ERROR: Some JDK classes cannot be found.");
-			System.err.println("       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
-			System.err.println("");
-		}
-	}
+  protected void run(ConsoleView view) throws Exception
+  {
+    try (PrintStream ps = new PrintStream(
+        new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)),
+        false))
+    {
+      System.setOut(ps);
+      view.setPrintStream(ps);
+      int iterations = 0;
+      while (!view.shouldExit())
+      {
+        if (maxIterations_ > 1 || maxIterations_ == -1)
+          clearTerminal(ps);
+        printTopBar(ps);
+        view.printView();
+        ps.flush();
+        iterations++;
+        if (iterations >= maxIterations_ && maxIterations_ > 0)
+          break;
+        view.sleep((int) (delay_ * 1000));
+      }
+    }
+    catch (NoClassDefFoundError e)
+    {
+      e.printStackTrace(System.err);
 
-	/**
-	 * @param ps 
-	 *
-	 */
-	private void clearTerminal(PrintStream ps) {
-		if (noANSITerminal_)
-			// hack
-			ps.printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
-		else if (altClearRequired_)
-			ps.print('\f');
-		else
-			ps.print(CLEAR_TERMINAL_ANSI_CMD);
-	}
+      System.err.println("");
+      System.err.println("ERROR: Some JDK classes cannot be found.");
+      System.err.println(
+          "       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
+      System.err.println("");
+    }
+  }
 
-	public JvmTop() {
-		localOSBean_ = ManagementFactory.getOperatingSystemMXBean();
-		noANSITerminal_ = System.getProperty("os.name").contains("Windows") && System.getenv("ANSICON") == null;
-		altClearRequired_ = System.getProperty("jvmtop.altClear") != null;
-	}
+  /**
+   * @param ps 
+   *
+   */
+  private void clearTerminal(PrintStream ps)
+  {
+    if (noANSITerminal_)
+      // hack
+      ps.printf(
+          "%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
+    else if (altClearRequired_)
+      ps.print('\f');
+    else
+      ps.print(CLEAR_TERMINAL_ANSI_CMD);
+  }
 
-	/**
-	 * @param ps 
-	 * @throws NoSuchMethodException
-	 * @throws SecurityException
-	 *
-	 */
-	private void printTopBar(PrintStream ps) {
-		ps.printf(" JvmTop %s - %8tT, %6s, %2d cpus, %15.15s", VERSION, new Date(), localOSBean_.getArch(), localOSBean_.getAvailableProcessors(), localOSBean_.getName() + " "
-				+ localOSBean_.getVersion());
+  public JvmTop()
+  {
+    localOSBean_ = ManagementFactory.getOperatingSystemMXBean();
+    noANSITerminal_ = System.getProperty("os.name").contains("Windows")
+        && System.getenv("ANSICON") == null;
+    altClearRequired_ = System.getProperty("jvmtop.altClear") != null;
+  }
 
-		if (supportSystemLoadAverage() && localOSBean_.getSystemLoadAverage() != -1)
-			ps.printf(", load avg %3.2f%n", localOSBean_.getSystemLoadAverage());
-		else
-			ps.println();
-		ps.println(" https://github.com/patric-r/jvmtop");
-		ps.println();
-	}
+  /**
+   * @param ps 
+   * @throws NoSuchMethodException
+   * @throws SecurityException
+   *
+   */
+  private void printTopBar(PrintStream ps)
+  {
+    ps.printf(" JvmTop %s - %8tT, %6s, %2d cpus, %15.15s", VERSION, new Date(),
+        localOSBean_.getArch(), localOSBean_.getAvailableProcessors(),
+        localOSBean_.getName() + " " + localOSBean_.getVersion());
 
-	private boolean supportSystemLoadAverage() {
-		if (supportsSystemAverage_ == null)
-			try {
-				supportsSystemAverage_ = (localOSBean_.getClass().getMethod("getSystemLoadAverage") != null);
-			} catch (Throwable e) {
-				supportsSystemAverage_ = false;
-			}
-		return supportsSystemAverage_;
-	}
+    if (supportSystemLoadAverage() && localOSBean_.getSystemLoadAverage() != -1)
+      ps.printf(", load avg %3.2f%n", localOSBean_.getSystemLoadAverage());
+    else
+      ps.println();
+    ps.println(" https://github.com/patric-r/jvmtop");
+    ps.println();
+  }
 
-	public Double getDelay() {
-		return delay_;
-	}
+  private boolean supportSystemLoadAverage()
+  {
+    if (supportsSystemAverage_ == null)
+      try
+      {
+        supportsSystemAverage_ = (localOSBean_.getClass()
+            .getMethod("getSystemLoadAverage") != null);
+      }
+      catch (Throwable e)
+      {
+        supportsSystemAverage_ = false;
+      }
+    return supportsSystemAverage_;
+  }
 
-	public void setDelay(Double delay) {
-		delay_ = delay;
-	}
+  public Double getDelay()
+  {
+    return delay_;
+  }
+
+  public void setDelay(Double delay)
+  {
+    delay_ = delay;
+  }
 
 }

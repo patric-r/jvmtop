@@ -19,20 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package com.jvmtop.openjdk.tools;
+
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 /**
  * TODO: document this type!
  *
  * @author francol
  *
  */
-public class LocalManagementInfoSourceTest {
+public class LocalManagementInfoSourceTest
+{
 
-	@Test
-	public void canGetProcessCpuTime() throws Exception {
-		assertTrue(new LocalManagementInfoSource().getProcessCpuTime() > 0);
-	}
+  @Test
+  public void canGetProcessCpuTime() throws Exception
+  {
+    assertTrue(new LocalManagementInfoSource().getProcessCpuTime() > 0);
+  }
 
 }

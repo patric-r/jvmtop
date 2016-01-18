@@ -39,184 +39,229 @@ import com.jvmtop.monitor.VMInfoState;
  * @author paru
  *
  */
-public class VMDetailView extends AbstractConsoleView {
+public class VMDetailView extends AbstractConsoleView
+{
 
-	private VMInfo vmInfo_;
+  private VMInfo  vmInfo_;
 
-	private boolean sortByTotalCPU_ = false;
+  private boolean sortByTotalCPU_           = false;
 
-	private int numberOfDisplayedThreads_ = 10;
+  private int     numberOfDisplayedThreads_ = 10;
 
-	private int threadNameDisplayWidth_ = 30;
+  private int     threadNameDisplayWidth_   = 30;
 
-	private boolean displayedThreadLimit_ = true;
+  private boolean displayedThreadLimit_     = true;
 
-	private boolean printVMInfo = true;
-	
-	/**
-	 * @return the printVMInfo
-	 */
-	public boolean isPrintVMInfo() {
-		return printVMInfo;
-	}
+  private boolean printVMInfo               = true;
 
-	/**
-	 * @param printVMInfo the printVMInfo to set
-	 */
-	public void setPrintVMInfo(boolean printVMInfo) {
-		this.printVMInfo = printVMInfo;
-	}
+  /**
+   * @return the printVMInfo
+   */
+  public boolean isPrintVMInfo()
+  {
+    return printVMInfo;
+  }
 
+  /**
+   * @param printVMInfo the printVMInfo to set
+   */
+  public void setPrintVMInfo(boolean printVMInfo)
+  {
+    this.printVMInfo = printVMInfo;
+  }
 
-	public VMDetailView(int vmid, Integer width) throws Exception {
-		super(width);
-		vmInfo_ = VMInfo.processNewVM(vmid);
-	}
+  public VMDetailView(int vmid, Integer width) throws Exception
+  {
+    super(width);
+    vmInfo_ = VMInfo.processNewVM(vmid);
+  }
 
-	/**
-	 * @throws Exception 
-	 * 
-	 */
-	public VMDetailView() throws Exception {
-		this(currentProcessID(), null);
-	}
+  /**
+   * @throws Exception 
+   * 
+   */
+  public VMDetailView() throws Exception
+  {
+    this(currentProcessID(), null);
+  }
 
-	public boolean isSortByTotalCPU() {
-		return sortByTotalCPU_;
-	}
+  public boolean isSortByTotalCPU()
+  {
+    return sortByTotalCPU_;
+  }
 
-	public void setSortByTotalCPU(boolean sortByTotalCPU) {
-		sortByTotalCPU_ = sortByTotalCPU;
-	}
+  public void setSortByTotalCPU(boolean sortByTotalCPU)
+  {
+    sortByTotalCPU_ = sortByTotalCPU;
+  }
 
-	@Override
-	public void printView() throws Exception {
-		vmInfo_.update();
+  @Override
+  public void printView() throws Exception
+  {
+    vmInfo_.update();
 
-		if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR) {
-			printStream_.println("ERROR: Could not fetch telemetries - Process terminated?");
-			exit();
-			return;
-		}
-		if (vmInfo_.getState() != VMInfoState.ATTACHED) {
-			printStream_.println("ERROR: Could not attach to process.");
-			exit();
-			return;
-		}
+    if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR)
+    {
+      printStream_
+          .println("ERROR: Could not fetch telemetries - Process terminated?");
+      exit();
+      return;
+    }
+    if (vmInfo_.getState() != VMInfoState.ATTACHED)
+    {
+      printStream_.println("ERROR: Could not attach to process.");
+      exit();
+      return;
+    }
 
-		if (printVMInfo) {
-			printVMInfo();
-		}
+    if (printVMInfo)
+    {
+      printVMInfo();
+    }
 
-		printTopThreads();
-	}
+    printTopThreads();
+  }
 
-	private void printVMInfo() {
-		Map<String, String> properties = vmInfo_.getSystemProperties();
+  private void printVMInfo()
+  {
+    Map<String, String> properties = vmInfo_.getSystemProperties();
 
-		String command = properties.get("sun.java.command");
-		if (command != null) {
-			String[] commandArray = command.split(" ");
+    String command = properties.get("sun.java.command");
+    if (command != null)
+    {
+      String[] commandArray = command.split(" ");
 
-			List<String> commandList = Arrays.asList(commandArray);
-			commandList = commandList.subList(1, commandList.size());
+      List<String> commandList = Arrays.asList(commandArray);
+      commandList = commandList.subList(1, commandList.size());
 
-			printStream_.printf(" PID %d: %s %n", vmInfo_.getId(), commandArray[0]);
+      printStream_.printf(" PID %d: %s %n", vmInfo_.getId(), commandArray[0]);
 
-			String argJoin = join(commandList, " ");
-			if (argJoin.length() > 67)
-				printStream_.printf(" ARGS: %s[...]%n", leftStr(argJoin, 67));
-			else
-				printStream_.printf(" ARGS: %s%n", argJoin);
-		} else {
-			printStream_.printf(" PID %d: %n", vmInfo_.getId());
-			printStream_.printf(" ARGS: [UNKNOWN] %n");
-		}
+      String argJoin = join(commandList, " ");
+      if (argJoin.length() > 67)
+        printStream_.printf(" ARGS: %s[...]%n", leftStr(argJoin, 67));
+      else
+        printStream_.printf(" ARGS: %s%n", argJoin);
+    }
+    else
+    {
+      printStream_.printf(" PID %d: %n", vmInfo_.getId());
+      printStream_.printf(" ARGS: [UNKNOWN] %n");
+    }
 
-		String join = join(vmInfo_.getRuntimeMXBean().getInputArguments(), " ");
-		if (join.length() > 65)
-			printStream_.printf(" VMARGS: %s[...]%n", leftStr(join, 65));
-		else
-			printStream_.printf(" VMARGS: %s%n", join);
+    String join = join(vmInfo_.getRuntimeMXBean().getInputArguments(), " ");
+    if (join.length() > 65)
+      printStream_.printf(" VMARGS: %s[...]%n", leftStr(join, 65));
+    else
+      printStream_.printf(" VMARGS: %s%n", join);
 
-		printStream_.printf(" VM: %s %s %s%n", properties.get("java.vendor"), properties.get("java.vm.name"), properties.get("java.version"));
-		printStream_.printf(" UP: %-7s #THR: %-4d #THRPEAK: %-4d #THRCREATED: %-4d USER: %-12s%n", toHHMM(vmInfo_.getRuntimeMXBean().getUptime()), vmInfo_.getThreadCount(), vmInfo_.getThreadMXBean()
-				.getPeakThreadCount(), vmInfo_.getThreadMXBean().getTotalStartedThreadCount(), vmInfo_.getOSUser());
+    printStream_.printf(" VM: %s %s %s%n", properties.get("java.vendor"),
+        properties.get("java.vm.name"), properties.get("java.version"));
+    printStream_.printf(
+        " UP: %-7s #THR: %-4d #THRPEAK: %-4d #THRCREATED: %-4d USER: %-12s%n",
+        toHHMM(vmInfo_.getRuntimeMXBean().getUptime()),
+        vmInfo_.getThreadCount(),
+        vmInfo_.getThreadMXBean().getPeakThreadCount(),
+        vmInfo_.getThreadMXBean().getTotalStartedThreadCount(),
+        vmInfo_.getOSUser());
 
-		printStream_.printf(" GC-Time: %-7s  #GC-Runs: %-8d  #TotalLoadedClasses: %-8d%n", toHHMM(vmInfo_.getGcTime()), vmInfo_.getGcCount(), vmInfo_.getTotalLoadedClassCount());
+    printStream_.printf(
+        " GC-Time: %-7s  #GC-Runs: %-8d  #TotalLoadedClasses: %-8d%n",
+        toHHMM(vmInfo_.getGcTime()), vmInfo_.getGcCount(),
+        vmInfo_.getTotalLoadedClassCount());
 
-		printStream_.printf(" CPU: %5.2f%% GC: %5.2f%% HEAP:%5s /%5s NONHEAP:%5s /%5s%n", vmInfo_.getCpuLoad() * 100, vmInfo_.getGcLoad() * 100, toMB(vmInfo_.getHeapUsed()),
-				toMB(vmInfo_.getHeapMax()), toMB(vmInfo_.getNonHeapUsed()), toMB(vmInfo_.getNonHeapMax()));
+    printStream_.printf(
+        " CPU: %5.2f%% GC: %5.2f%% HEAP:%5s /%5s NONHEAP:%5s /%5s%n",
+        vmInfo_.getCpuLoad() * 100, vmInfo_.getGcLoad() * 100,
+        toMB(vmInfo_.getHeapUsed()), toMB(vmInfo_.getHeapMax()),
+        toMB(vmInfo_.getNonHeapUsed()), toMB(vmInfo_.getNonHeapMax()));
 
-		printStream_.println();
-	}
+    printStream_.println();
+  }
 
-	/**
-	 * @throws Exception
-	 */
-	private void printTopThreads() throws Exception {
-		if (!vmInfo_.getThreadMXBean().isThreadCpuTimeSupported()) {
-			printStream_.printf("%n -Thread CPU telemetries are not available on the monitored jvm/platform-%n");
-			return;
-		}
-		
-		printStream_.printf(" %6s %-" + threadNameDisplayWidth_ + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU", "TOTALCPU", "BLOCKEDBY");
-	
-		List<ThreadStats> sortedThreadStats = vmInfo_.getThreadInfoSortedByCPU();
-		
-		boolean someThreadsArentDisplayed = false;
-		int displayedThreads = 0;
-		for (ThreadStats threadStats : sortedThreadStats) {
-			ThreadInfo info = threadStats.getThreadInfo();
-			displayedThreads++;
-			if (displayedThreads > numberOfDisplayedThreads_ && displayedThreadLimit_) {
-				someThreadsArentDisplayed = true;
-				break;
-			}
-			if (info != null)
-				printStream_.printf(" %6d %-" + threadNameDisplayWidth_ + "s  %13s %5.2f%%    %5.2f%% %5s %n", 
-						threadStats.getTid(), 
-						leftStr(info.getThreadName(), threadNameDisplayWidth_), 
-						info.getThreadState(),
-						threadStats.getDeltaThreadCPUUtilizationPercentage(),
-						threadStats.getTotalThreadCPUUtilizationPercentage(), 
-						getBlockedThread(info));
-		}
-		
-		if (someThreadsArentDisplayed)
-			printStream_.printf(" Note: Only top %d threads (according cpu load) are shown!", numberOfDisplayedThreads_);
-	}
+  /**
+   * @throws Exception
+   */
+  private void printTopThreads() throws Exception
+  {
+    if (!vmInfo_.getThreadMXBean().isThreadCpuTimeSupported())
+    {
+      printStream_.printf(
+          "%n -Thread CPU telemetries are not available on the monitored jvm/platform-%n");
+      return;
+    }
 
+    printStream_.printf(
+        " %6s %-" + threadNameDisplayWidth_ + "s  %13s %8s    %8s %5s %n",
+        "TID", "NAME", "STATE", "CPU", "TOTALCPU", "BLOCKEDBY");
 
-	private String getBlockedThread(ThreadInfo info) {
-		if (info.getLockOwnerId() >= 0) {
-			return "" + info.getLockOwnerId();
-		}
-		return "";
-	}
+    List<ThreadStats> sortedThreadStats = vmInfo_.getThreadInfoSortedByCPU();
 
-	public int getNumberOfDisplayedThreads() {
-		return numberOfDisplayedThreads_;
-	}
+    boolean someThreadsArentDisplayed = false;
+    int displayedThreads = 0;
+    for (ThreadStats threadStats : sortedThreadStats)
+    {
+      ThreadInfo info = threadStats.getThreadInfo();
+      displayedThreads++;
+      if (displayedThreads > numberOfDisplayedThreads_ && displayedThreadLimit_)
+      {
+        someThreadsArentDisplayed = true;
+        break;
+      }
+      if (info != null)
+        printStream_.printf(
+            " %6d %-" + threadNameDisplayWidth_
+                + "s  %13s %5.2f%%    %5.2f%% %5s %n",
+            threadStats.getTid(),
+            leftStr(info.getThreadName(), threadNameDisplayWidth_),
+            info.getThreadState(),
+            threadStats.getDeltaThreadCPUUtilizationPercentage(),
+            threadStats.getTotalThreadCPUUtilizationPercentage(),
+            getBlockedThread(info));
+    }
 
-	public void setNumberOfDisplayedThreads(int numberOfDisplayedThreads) {
-		numberOfDisplayedThreads_ = numberOfDisplayedThreads;
-	}
+    if (someThreadsArentDisplayed)
+      printStream_.printf(
+          " Note: Only top %d threads (according cpu load) are shown!",
+          numberOfDisplayedThreads_);
+  }
 
-	public boolean isDisplayedThreadLimit() {
-		return displayedThreadLimit_;
-	}
+  private String getBlockedThread(ThreadInfo info)
+  {
+    if (info.getLockOwnerId() >= 0)
+    {
+      return "" + info.getLockOwnerId();
+    }
+    return "";
+  }
 
-	public void setDisplayedThreadLimit(boolean displayedThreadLimit) {
-		displayedThreadLimit_ = displayedThreadLimit;
-	}
+  public int getNumberOfDisplayedThreads()
+  {
+    return numberOfDisplayedThreads_;
+  }
 
-	public int getThreadNameDisplayWidth() {
-		return threadNameDisplayWidth_;
-	}
+  public void setNumberOfDisplayedThreads(int numberOfDisplayedThreads)
+  {
+    numberOfDisplayedThreads_ = numberOfDisplayedThreads;
+  }
 
-	public void setThreadNameDisplayWidth(int threadNameDisplayWidth_) {
-		this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
-	}
+  public boolean isDisplayedThreadLimit()
+  {
+    return displayedThreadLimit_;
+  }
+
+  public void setDisplayedThreadLimit(boolean displayedThreadLimit)
+  {
+    displayedThreadLimit_ = displayedThreadLimit;
+  }
+
+  public int getThreadNameDisplayWidth()
+  {
+    return threadNameDisplayWidth_;
+  }
+
+  public void setThreadNameDisplayWidth(int threadNameDisplayWidth_)
+  {
+    this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
+  }
 
 }

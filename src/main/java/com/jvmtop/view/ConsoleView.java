@@ -29,32 +29,33 @@ import java.io.PrintStream;
  * @author paru
  *
  */
-public interface ConsoleView {
-	
-	public void setPrintStream(PrintStream printStream);
-	
-	/**
-	 * Prints the view to PrintStream setted (default System.out)
-	 *
-	 * @throws Exception
-	 */
-	public void printView() throws Exception;
+public interface ConsoleView
+{
 
-	/**
-	 * Notifies that this view encountered issues and should be called again
-	 * (e.g. due to exceptions)
-	 *
-	 * TODO: remove this method and use proper exception instead.
-	 *
-	 * @return
-	 */
-	public boolean shouldExit();
+  public void setPrintStream(PrintStream printStream);
 
-	/**
-	 * Requests the view to sleep (defined as "not outputting anything").
-	 * However, the view is allowed to do some work / telemtry retrieval during
-	 * sleep.
-	 *
-	 */
-	public void sleep(long millis) throws Exception;
+  /**
+   * Prints the view to PrintStream setted (default System.out)
+   *
+   * @throws Exception
+   */
+  public void printView() throws Exception;
+
+  /**
+   * Notifies that this view encountered issues and should be called again
+   * (e.g. due to exceptions)
+   *
+   * TODO: remove this method and use proper exception instead.
+   *
+   * @return
+   */
+  public boolean shouldExit();
+
+  /**
+   * Requests the view to sleep (defined as "not outputting anything").
+   * However, the view is allowed to do some work / telemtry retrieval during
+   * sleep.
+   *
+   */
+  public void sleep(long millis) throws Exception;
 }

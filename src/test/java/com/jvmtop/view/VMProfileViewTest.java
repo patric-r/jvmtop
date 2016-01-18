@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package com.jvmtop.view;
+
 import static com.jvmtop.monitor.VMUtils.currentProcessID;
 import static org.junit.Assert.assertTrue;
 
@@ -27,17 +28,20 @@ import java.io.PrintStream;
 
 import org.junit.Test;
 
-public class VMProfileViewTest {
+public class VMProfileViewTest
+{
 
-	@Test
-	public void shouldDisplayCurrentProcessID() throws Exception {	
-		VMProfileView view = new VMProfileView();
-		
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		view.setPrintStream(new PrintStream(outputStream));
-		view.printView();	
-		
-		assertTrue("Output doesn't contain current PID", outputStream.toString().contains("PID " + currentProcessID()));
-	}
-	
+  @Test
+  public void shouldDisplayCurrentProcessID() throws Exception
+  {
+    VMProfileView view = new VMProfileView();
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    view.setPrintStream(new PrintStream(outputStream));
+    view.printView();
+
+    assertTrue("Output doesn't contain current PID",
+        outputStream.toString().contains("PID " + currentProcessID()));
+  }
+
 }

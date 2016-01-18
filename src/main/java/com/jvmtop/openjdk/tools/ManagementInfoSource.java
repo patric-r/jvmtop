@@ -35,59 +35,61 @@ import java.util.Collection;
  * @author francol
  *
  */
-public interface ManagementInfoSource {
+public interface ManagementInfoSource
+{
 
-	/**
-	 * @return
-	 */
-	public boolean isDead();
+  /**
+   * @return
+   */
+  public boolean isDead();
 
-	/**
-	 * 
-	 */
-	public void flush();
+  /**
+   * 
+   */
+  public void flush();
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 * @throws Exception 
-	 */
-	public OperatingSystemMXBean getSunOperatingSystemMXBean() throws Exception;
+  /**
+   * @return
+   * @throws IOException 
+   * @throws Exception 
+   */
+  public OperatingSystemMXBean getSunOperatingSystemMXBean() throws Exception;
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 */
-	public RuntimeMXBean getRuntimeMXBean() throws IOException;
+  /**
+   * @return
+   * @throws IOException 
+   */
+  public RuntimeMXBean getRuntimeMXBean() throws IOException;
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 */
-	public Collection<GarbageCollectorMXBean> getGarbageCollectorMXBeans() throws IOException;
+  /**
+   * @return
+   * @throws IOException 
+   */
+  public Collection<GarbageCollectorMXBean> getGarbageCollectorMXBeans()
+      throws IOException;
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 */
-	public ClassLoadingMXBean getClassLoadingMXBean() throws IOException;
+  /**
+   * @return
+   * @throws IOException 
+   */
+  public ClassLoadingMXBean getClassLoadingMXBean() throws IOException;
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 */
-	public MemoryMXBean getMemoryMXBean() throws IOException;
+  /**
+   * @return
+   * @throws IOException 
+   */
+  public MemoryMXBean getMemoryMXBean() throws IOException;
 
-	/**
-	 * @return
-	 * @throws IOException 
-	 */
-	public ThreadMXBean getThreadMXBean() throws IOException;
+  /**
+   * @return
+   * @throws IOException 
+   */
+  public ThreadMXBean getThreadMXBean() throws IOException;
 
-	/**
-	 * @return
-	 * @throws Exception 
-	 */
-	public long getProcessCpuTime() throws Exception;
+  /**
+   * @return
+   * @throws Exception 
+   */
+  public long getProcessCpuTime() throws Exception;
 
 }

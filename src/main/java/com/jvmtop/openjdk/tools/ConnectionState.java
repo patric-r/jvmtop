@@ -35,16 +35,14 @@ package com.jvmtop.openjdk.tools;
  * bound property.
  */
 public enum ConnectionState {
-	/**
-	 * The connection has been successfully established.
-	 */
-	CONNECTED,
-	/**
-	 * No connection present.
-	 */
-	DISCONNECTED,
-	/**
-	 * The connection is being attempted.
-	 */
-	CONNECTING
+  /**
+   * The connection has been successfully established.
+   */
+  CONNECTED, /**
+              * No connection present.
+              */
+  DISCONNECTED, /**
+                 * The connection is being attempted.
+                 */
+  CONNECTING
 }

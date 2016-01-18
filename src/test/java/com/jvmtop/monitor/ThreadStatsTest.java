@@ -27,28 +27,31 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-public class ThreadStatsTest {
-	
-	@Test
-	public void naturalOrderingIsDescendentByDeltaAndTotalCPUTime() {
-		SortedSet<ThreadStats> sorted = new TreeSet<ThreadStats>();
-		sorted.add(newThreadStats(1L, 1L, 10L));
-		sorted.add(newThreadStats(2L, 2L, 20L));
-		sorted.add(newThreadStats(3L, 2L, 10L));
-		sorted.add(newThreadStats(4L, 4L, 20L));
-		
-		String result = "";
-		for (ThreadStats threadStats : sorted) {
-			result += threadStats.getTid();
-		}
-		
-		assertEquals("4231", result);
-	}
-	
-	private ThreadStats newThreadStats(long id, long delta, long total) {
-		return new ThreadStats(id)
-			   .setDeltaCPUTime(delta)
-			   .setTotalThreadCPUTime(total);
-	}
+public class ThreadStatsTest
+{
+
+  @Test
+  public void naturalOrderingIsDescendentByDeltaAndTotalCPUTime()
+  {
+    SortedSet<ThreadStats> sorted = new TreeSet<ThreadStats>();
+    sorted.add(newThreadStats(1L, 1L, 10L));
+    sorted.add(newThreadStats(2L, 2L, 20L));
+    sorted.add(newThreadStats(3L, 2L, 10L));
+    sorted.add(newThreadStats(4L, 4L, 20L));
+
+    String result = "";
+    for (ThreadStats threadStats : sorted)
+    {
+      result += threadStats.getTid();
+    }
+
+    assertEquals("4231", result);
+  }
+
+  private ThreadStats newThreadStats(long id, long delta, long total)
+  {
+    return new ThreadStats(id).setDeltaCPUTime(delta)
+        .setTotalThreadCPUTime(total);
+  }
 
 }

@@ -19,21 +19,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package com.jvmtop.monitor;
+
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
 /**
  * TODO: document this type!
  *
  * @author francol
  *
  */
-public class VMInfoTest {
+public class VMInfoTest
+{
 
-	@Test
-	public void shouldHaveStatisticsForAllActiveThreads() throws Exception {
-		VMInfo vmInfo = VMInfo.processCurrentVM();
-		assertEquals(vmInfo.getThreadCount(), vmInfo.getThreadStats().size());
-	}
+  @Test
+  public void shouldHaveStatisticsForAllActiveThreads() throws Exception
+  {
+    VMInfo vmInfo = VMInfo.processCurrentVM();
+    assertEquals(vmInfo.getThreadCount(), vmInfo.getThreadStats().size());
+  }
 
 }

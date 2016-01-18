@@ -19,15 +19,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 package com.jvmtop;
+
 /**
  * TODO: document this type!
  *
  * @author francol
  *
  */
-public class JvmTopException extends Exception {
+public class JvmTopException extends Exception
+{
 
-	public JvmTopException(String message) {
-		super(message);
-	}
+  public JvmTopException(String message)
+  {
+    super(message);
+  }
 }

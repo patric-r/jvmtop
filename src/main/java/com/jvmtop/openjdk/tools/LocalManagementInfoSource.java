@@ -37,59 +37,74 @@ import java.util.Collection;
  * @author francol
  *
  */
-public class LocalManagementInfoSource implements ManagementInfoSource {
+public class LocalManagementInfoSource implements ManagementInfoSource
+{
 
-	@Override
-	public boolean isDead() {
-		return false;
-	}
+  @Override
+  public boolean isDead()
+  {
+    return false;
+  }
 
-	@Override
-	public void flush() {
-	}
+  @Override
+  public void flush()
+  {
+  }
 
-	@Override
-	public OperatingSystemMXBean getSunOperatingSystemMXBean() throws IOException {
-		return ManagementFactory.getOperatingSystemMXBean();
-	}
+  @Override
+  public OperatingSystemMXBean getSunOperatingSystemMXBean() throws IOException
+  {
+    return ManagementFactory.getOperatingSystemMXBean();
+  }
 
-	@Override
-	public RuntimeMXBean getRuntimeMXBean() throws IOException {
-		return ManagementFactory.getRuntimeMXBean();
-	}
+  @Override
+  public RuntimeMXBean getRuntimeMXBean() throws IOException
+  {
+    return ManagementFactory.getRuntimeMXBean();
+  }
 
-	@Override
-	public Collection<GarbageCollectorMXBean> getGarbageCollectorMXBeans() throws IOException {
-		return ManagementFactory.getGarbageCollectorMXBeans();
-	}
+  @Override
+  public Collection<GarbageCollectorMXBean> getGarbageCollectorMXBeans()
+      throws IOException
+  {
+    return ManagementFactory.getGarbageCollectorMXBeans();
+  }
 
-	@Override
-	public ClassLoadingMXBean getClassLoadingMXBean() throws IOException {
-		return ManagementFactory.getClassLoadingMXBean();
-	}
+  @Override
+  public ClassLoadingMXBean getClassLoadingMXBean() throws IOException
+  {
+    return ManagementFactory.getClassLoadingMXBean();
+  }
 
-	@Override
-	public MemoryMXBean getMemoryMXBean() throws IOException {
-		return ManagementFactory.getMemoryMXBean();
-	}
+  @Override
+  public MemoryMXBean getMemoryMXBean() throws IOException
+  {
+    return ManagementFactory.getMemoryMXBean();
+  }
 
-	@Override
-	public ThreadMXBean getThreadMXBean() throws IOException {
-		return ManagementFactory.getThreadMXBean();
-	}
+  @Override
+  public ThreadMXBean getThreadMXBean() throws IOException
+  {
+    return ManagementFactory.getThreadMXBean();
+  }
 
-	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public long getProcessCpuTime() throws Exception {
-		OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-		Class clazz = operatingSystemMXBean.getClass();
-		Method getProcessCpuTime = clazz.getMethod("getProcessCpuTime", new Class[0]);
-		getProcessCpuTime.setAccessible(true);
-		long result =  (long) getProcessCpuTime.invoke(operatingSystemMXBean, new Object[0]);
-		if (clazz.getName().contains("ibm")) {
-			result = result * 100;
-		}
-		return result;
-	}
+  @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public long getProcessCpuTime() throws Exception
+  {
+    OperatingSystemMXBean operatingSystemMXBean = ManagementFactory
+        .getOperatingSystemMXBean();
+    Class clazz = operatingSystemMXBean.getClass();
+    Method getProcessCpuTime = clazz.getMethod("getProcessCpuTime",
+        new Class[0]);
+    getProcessCpuTime.setAccessible(true);
+    long result = (long) getProcessCpuTime.invoke(operatingSystemMXBean,
+        new Object[0]);
+    if (clazz.getName().contains("ibm"))
+    {
+      result = result * 100;
+    }
+    return result;
+  }
 
 }

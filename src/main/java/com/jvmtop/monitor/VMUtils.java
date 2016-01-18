@@ -29,11 +29,13 @@ import java.lang.management.RuntimeMXBean;
  * @author francol
  *
  */
-public class VMUtils {
+public class VMUtils
+{
 
-	public static int currentProcessID() {
-		RuntimeMXBean currentRuntime = ManagementFactory.getRuntimeMXBean();
-		return new Integer(currentRuntime.getName().split("@")[0]);
-	}
-	
+  public static int currentProcessID()
+  {
+    RuntimeMXBean currentRuntime = ManagementFactory.getRuntimeMXBean();
+    return new Integer(currentRuntime.getName().split("@")[0]);
+  }
+
 }

@@ -30,44 +30,57 @@ import com.jvmtop.monitor.VMInfo;
  * @author francol
  *
  */
-public class ExtendedThreadInfo {
+public class ExtendedThreadInfo
+{
 
-	private final ThreadInfo threadInfo_;
-	private final long threadCpuTime;
-	private VMInfo vmInfo_;
+  private final ThreadInfo threadInfo_;
 
-	public ExtendedThreadInfo(ThreadInfo threadInfo, long threadCpuTime, VMInfo vmInfo) {
-		this.threadInfo_ = threadInfo;
-		this.threadCpuTime = threadCpuTime;
-		vmInfo_ = vmInfo;
-	}
+  private final long       threadCpuTime;
 
-	public ThreadInfo getThreadInfo() {
-		return threadInfo_;
-	}
-	
-	private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime) {
-		return getThreadCPUUtilization(deltaThreadCpuTime, totalTime, 1000 * 1000);
-	}
+  private VMInfo           vmInfo_;
 
-	private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime, double factor) {
-		if (totalTime == 0)
-			return 0;
-		return deltaThreadCpuTime / factor / totalTime * 100d;
-	}
+  public ExtendedThreadInfo(ThreadInfo threadInfo, long threadCpuTime,
+      VMInfo vmInfo)
+  {
+    this.threadInfo_ = threadInfo;
+    this.threadCpuTime = threadCpuTime;
+    vmInfo_ = vmInfo;
+  }
 
-	/**
-	 * @return
-	 */
-	public double getThreadCPUUtilization() {
-		return getThreadCPUUtilization(threadCpuTime, vmInfo_.getDeltaUptime());
-	}
+  public ThreadInfo getThreadInfo()
+  {
+    return threadInfo_;
+  }
 
-	/**
-	 * @return
-	 * @throws Exception 
-	 */
-	public double getTotalThreadCPUUtilization() throws Exception {
-		return getThreadCPUUtilization(threadCpuTime, vmInfo_.getProxyClient().getProcessCpuTime(), 1);	
-	}
+  private double getThreadCPUUtilization(long deltaThreadCpuTime,
+      long totalTime)
+  {
+    return getThreadCPUUtilization(deltaThreadCpuTime, totalTime, 1000 * 1000);
+  }
+
+  private double getThreadCPUUtilization(long deltaThreadCpuTime,
+      long totalTime, double factor)
+  {
+    if (totalTime == 0)
+      return 0;
+    return deltaThreadCpuTime / factor / totalTime * 100d;
+  }
+
+  /**
+   * @return
+   */
+  public double getThreadCPUUtilization()
+  {
+    return getThreadCPUUtilization(threadCpuTime, vmInfo_.getDeltaUptime());
+  }
+
+  /**
+   * @return
+   * @throws Exception 
+   */
+  public double getTotalThreadCPUUtilization() throws Exception
+  {
+    return getThreadCPUUtilization(threadCpuTime,
+        vmInfo_.getProxyClient().getProcessCpuTime(), 1);
+  }
 }
