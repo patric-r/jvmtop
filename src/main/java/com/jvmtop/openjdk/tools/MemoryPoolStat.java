@@ -47,6 +47,7 @@ public class MemoryPoolStat {
 	private long collectThreshold;
 
 	private MemoryUsage beforeGcUsage;
+	private MemoryUsage afterGcUsage;
 
 	MemoryPoolStat(String name, long usageThreshold, MemoryUsage usage, long lastGcId, long lastGcStartTime, long lastGcEndTime, long collectThreshold, MemoryUsage beforeGcUsage,
 			MemoryUsage afterGcUsage) {
@@ -58,6 +59,7 @@ public class MemoryPoolStat {
 		this.lastGcEndTime = lastGcEndTime;
 		this.collectThreshold = collectThreshold;
 		this.beforeGcUsage = beforeGcUsage;
+		this.afterGcUsage = afterGcUsage;
 	}
 
 	/**
@@ -128,6 +130,6 @@ public class MemoryPoolStat {
 	 * occurs.
 	 */
 	public MemoryUsage getAfterGcUsage() {
-		return beforeGcUsage;
+		return afterGcUsage;
 	}
 }
