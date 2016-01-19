@@ -90,11 +90,17 @@ public abstract class AbstractConsoleView implements ConsoleView
   public String toHHMM(long millis)
   {
     StringBuilder sb = new StringBuilder();
-    try (Formatter formatter = new Formatter(sb);)
+    Formatter formatter = null;
+    try 
     {
+      formatter = new Formatter(sb);
       formatter.format("%2d:%2dm", millis / 1000 / 3600,
           (millis / 1000 / 60) % 60);
       return sb.toString();
+    } finally {
+      if (formatter != null) {
+        formatter.close();
+      }
     }
   }
 

@@ -98,8 +98,8 @@ public class LocalManagementInfoSource implements ManagementInfoSource
     Method getProcessCpuTime = clazz.getMethod("getProcessCpuTime",
         new Class[0]);
     getProcessCpuTime.setAccessible(true);
-    long result = (long) getProcessCpuTime.invoke(operatingSystemMXBean,
-        new Object[0]);
+    Long result = (Long) getProcessCpuTime.invoke(operatingSystemMXBean,
+          new Object[0]);
     if (clazz.getName().contains("ibm"))
     {
       result = result * 100;

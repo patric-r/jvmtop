@@ -305,10 +305,10 @@ public class JvmTop
 
   protected void run(ConsoleView view) throws Exception
   {
-    try (PrintStream ps = new PrintStream(
-        new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)),
-        false))
+    PrintStream ps = null;
+    try 
     {
+      ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.out)), false);
       System.setOut(ps);
       view.setPrintStream(ps);
       int iterations = 0;
@@ -334,6 +334,10 @@ public class JvmTop
       System.err.println(
           "       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
       System.err.println("");
+    } finally {
+      if (ps != null) {
+        ps.close();
+      }
     }
   }
 
