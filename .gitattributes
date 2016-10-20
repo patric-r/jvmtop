@@ -1,2 +1,5 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
+
+# set EOL to linux style to prevent issues
+*.sh text eol=lf
