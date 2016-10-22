@@ -37,6 +37,7 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import com.jvmtop.view.ConsoleView;
+import com.jvmtop.view.VMDetailStatView;
 import com.jvmtop.view.VMDetailView;
 import com.jvmtop.view.VMOverviewView;
 import com.jvmtop.view.VMProfileView;
@@ -91,6 +92,7 @@ public class JvmTop
             "delay between each output iteration").withRequiredArg()
         .ofType(Double.class);
     parser.accepts("profile", "start CPU profiling at the specified jvm");
+    parser.accepts("stat", "start stat view at the specified jvm");
     parser.accepts("sysinfo", "outputs diagnostic information");
     parser.accepts("verbose", "verbose mode");
     parser.accepts("threadlimit",
@@ -141,6 +143,8 @@ public class JvmTop
     double delay = 1.0;
 
     boolean profileMode = a.has("profile");
+    
+    boolean statMode = a.has("stat");
 
     Integer iterations = a.has("once") ? 1 : -1;
 
@@ -221,8 +225,9 @@ public class JvmTop
         {
           jvmTop.run(new VMProfileView(pid, width));
         }
-        else
-        {
+        else if (statMode) {
+            jvmTop.run(new VMDetailStatView(pid, width));
+        } else {
           VMDetailView vmDetailView = new VMDetailView(pid, width);
           vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
           if (threadlimit != null)
@@ -298,9 +303,13 @@ public class JvmTop
       {
         if (maxIterations_ > 1 || maxIterations_ == -1)
         {
-          clearTerminal();
+          if (view.isClearingRequired()) {
+            clearTerminal();
+          }
         }
-        printTopBar();
+        if (view.isTopBarRequired()) {
+            printTopBar();
+        }
         view.printView();
         System.out.flush();
         iterations++;
