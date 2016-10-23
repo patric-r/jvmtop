@@ -1,7 +1,7 @@
 /**
  * jvmtop - java monitoring for the command-line
- *
- * Copyright (C) 2013 by Patric Rufflar. All rights reserved.
+ * 
+ * Copyright (C) 2015 by Patric Rufflar. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  *
@@ -20,13 +20,24 @@
  */
 package com.jvmtop.monitor;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 /**
- * Indicates the monitoring state of a remote jvm.
+ * TODO: document this type!
  *
- * @author paru
+ * @author francol
  *
  */
-public enum VMInfoState {
-  INIT, ERROR_DURING_ATTACH, ATTACHED, ATTACHED_UPDATE_ERROR, DETACHED,
-  CONNECTION_REFUSED, UNKNOWN_ERROR
+public class VMInfoTest
+{
+
+  @Test
+  public void shouldHaveStatisticsForAllActiveThreads() throws Exception
+  {
+    VMInfo vmInfo = VMInfo.processCurrentVM();
+    assertEquals(vmInfo.getThreadCount(), vmInfo.getThreadStats().size());
+  }
+
 }

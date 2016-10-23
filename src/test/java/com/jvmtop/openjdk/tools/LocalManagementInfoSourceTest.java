@@ -1,7 +1,7 @@
 /**
  * jvmtop - java monitoring for the command-line
- *
- * Copyright (C) 2013 by Patric Rufflar. All rights reserved.
+ * 
+ * Copyright (C) 2015 by Patric Rufflar. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  *
@@ -18,15 +18,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmtop.monitor;
+package com.jvmtop.openjdk.tools;
+
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 /**
- * Indicates the monitoring state of a remote jvm.
+ * TODO: document this type!
  *
- * @author paru
+ * @author francol
  *
  */
-public enum VMInfoState {
-  INIT, ERROR_DURING_ATTACH, ATTACHED, ATTACHED_UPDATE_ERROR, DETACHED,
-  CONNECTION_REFUSED, UNKNOWN_ERROR
+public class LocalManagementInfoSourceTest
+{
+
+  @Test
+  public void canGetProcessCpuTime() throws Exception
+  {
+    assertTrue(new LocalManagementInfoSource().getProcessCpuTime() > 0);
+  }
+
 }

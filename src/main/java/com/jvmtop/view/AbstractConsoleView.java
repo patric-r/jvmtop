@@ -20,19 +20,20 @@
  */
 package com.jvmtop.view;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
- * Base class for all console views, providing some helper methods
- * for formatting.
+ * Base class for all console views, providing some helper methods for
+ * formatting.
  *
  * @author paru
  *
@@ -40,11 +41,13 @@ import java.util.Map;
 public abstract class AbstractConsoleView implements ConsoleView
 {
 
-  private static final int MIN_WIDTH = 80;
+  private static final int MIN_WIDTH    = 80;
 
-  private boolean shouldExit_ = false;
+  private boolean          shouldExit_  = false;
 
-  protected final int width;
+  protected final int      width;
+
+  protected PrintStream    printStream_ = System.out;
 
   /**
    *
@@ -52,27 +55,27 @@ public abstract class AbstractConsoleView implements ConsoleView
   public AbstractConsoleView(Integer width)
   {
     super();
-    if (width == null) width = MIN_WIDTH;
-    if (width < MIN_WIDTH) width = MIN_WIDTH;
+    if (width == null)
+      width = MIN_WIDTH;
+    if (width < MIN_WIDTH)
+      width = MIN_WIDTH;
     this.width = width;
   }
 
   /**
-   * Formats a long value containing "number of bytes" to its megabyte representation.
-   * If the value is negative, "n/a" will be returned.
+   * Formats a long value containing "number of bytes" to its megabyte
+   * representation. If the value is negative, "n/a" will be returned.
    *
-   * TODO: implement automatic scale to bigger units if this makes sense
-   * (e.g. output 4.3g instead of 4324m)
+   * TODO: implement automatic scale to bigger units if this makes sense (e.g.
+   * output 4.3g instead of 4324m)
    *
    * @param bytes
    * @return
    */
   public String toMB(long bytes)
   {
-    if(bytes<0)
-    {
+    if (bytes < 0)
       return "n/a";
-    }
     return "" + (bytes / 1024 / 1024) + "m";
   }
 
@@ -80,21 +83,31 @@ public abstract class AbstractConsoleView implements ConsoleView
    * Formats number of milliseconds to a HH:MM representation
    *
    * TODO: implement automatic scale (e.g. 1d 7h instead of 31:13m)
+   * 
    * @param millis
    * @return
    */
   public String toHHMM(long millis)
   {
     StringBuilder sb = new StringBuilder();
-    Formatter formatter = new Formatter(sb);
-    formatter
-.format("%2d:%2dm", millis / 1000 / 3600,
-        (millis / 1000 / 60) % 60);
-    return sb.toString();
+    Formatter formatter = null;
+    try 
+    {
+      formatter = new Formatter(sb);
+      formatter.format("%2d:%2dm", millis / 1000 / 3600,
+          (millis / 1000 / 60) % 60);
+      return sb.toString();
+    } finally {
+      if (formatter != null) {
+        formatter.close();
+      }
+    }
   }
 
   /**
-   * Returns a substring of the given string, representing the 'length' most-right characters
+   * Returns a substring of the given string, representing the 'length'
+   * most-right characters
+   * 
    * @param str
    * @param length
    * @return
@@ -105,7 +118,9 @@ public abstract class AbstractConsoleView implements ConsoleView
   }
 
   /**
-   * Returns a substring of the given string, representing the 'length' most-left characters
+   * Returns a substring of the given string, representing the 'length'
+   * most-left characters
+   * 
    * @param str
    * @param length
    * @return
@@ -117,6 +132,7 @@ public abstract class AbstractConsoleView implements ConsoleView
 
   /**
    * Joins the given list of strings using the given delimiter delim
+   * 
    * @param list
    * @param delim
    * @return
@@ -147,8 +163,8 @@ public abstract class AbstractConsoleView implements ConsoleView
   }
 
   /**
-   * Requests the disposal of this view - it should be called again.
-   * TODO: refactor / remove this functional, use proper exception handling instead.
+   * Requests the disposal of this view - it should be called again. TODO:
+   * refactor / remove this functional, use proper exception handling instead.
    */
   protected void exit()
   {
@@ -162,28 +178,25 @@ public abstract class AbstractConsoleView implements ConsoleView
    * @param reverse
    * @return
    */
-  public Map sortByValue(Map map, boolean reverse)
+  public Map<Long, Long> sortByValue(Map<Long, Long> map, boolean reverse)
   {
-    List list = new LinkedList(map.entrySet());
-    Collections.sort(list, new Comparator()
+    Set<Entry<Long, Long>> entrySet = map.entrySet();
+    List<Entry<Long, Long>> list = new LinkedList<Entry<Long, Long>>(entrySet);
+    Collections.sort(list, new Comparator<Entry<Long, Long>>()
     {
       @Override
-      public int compare(Object o1, Object o2)
+      public int compare(Entry<Long, Long> entry1, Entry<Long, Long> entry2)
       {
-        return ((Comparable) ((Map.Entry) (o1)).getValue())
-            .compareTo(((Map.Entry) (o2)).getValue());
+        return entry1.getValue().compareTo(entry2.getValue());
       }
     });
 
     if (reverse)
-    {
       Collections.reverse(list);
-    }
 
-    Map result = new LinkedHashMap();
-    for (Iterator it = list.iterator(); it.hasNext();)
+    Map<Long, Long> result = new LinkedHashMap<Long, Long>();
+    for (Entry<Long, Long> entry : list)
     {
-      Map.Entry entry = (Map.Entry) it.next();
       result.put(entry.getKey(), entry.getValue());
     }
     return result;
@@ -193,5 +206,15 @@ public abstract class AbstractConsoleView implements ConsoleView
   public void sleep(long millis) throws Exception
   {
     Thread.sleep(millis);
+  }
+
+  public PrintStream getPrintStream()
+  {
+    return printStream_;
+  }
+
+  public void setPrintStream(PrintStream printStream)
+  {
+    this.printStream_ = printStream;
   }
 }

@@ -32,9 +32,9 @@ public class MethodStats implements Comparable<MethodStats>
 {
   private AtomicLong hits_       = new AtomicLong(0);
 
-  private String        className_  = null;
+  private String     className_  = null;
 
-  private String        methodName_ = null;
+  private String     methodName_ = null;
 
   /**
    * @param className
@@ -46,7 +46,6 @@ public class MethodStats implements Comparable<MethodStats>
     className_ = className;
     methodName_ = methodName;
   }
-
 
   @Override
   public int hashCode()
@@ -60,50 +59,32 @@ public class MethodStats implements Comparable<MethodStats>
     return result;
   }
 
-
-
   @Override
   public boolean equals(Object obj)
   {
     if (this == obj)
-    {
       return true;
-    }
     if (obj == null)
-    {
       return false;
-    }
     if (getClass() != obj.getClass())
-    {
       return false;
-    }
     MethodStats other = (MethodStats) obj;
     if (className_ == null)
     {
       if (other.className_ != null)
-      {
         return false;
-      }
     }
     else if (!className_.equals(other.className_))
-    {
       return false;
-    }
     if (methodName_ == null)
     {
       if (other.methodName_ != null)
-      {
         return false;
-      }
     }
     else if (!methodName_.equals(other.methodName_))
-    {
       return false;
-    }
     return true;
   }
-
-
 
   @Override
   /**
@@ -128,7 +109,5 @@ public class MethodStats implements Comparable<MethodStats>
   {
     return methodName_;
   }
-
-
 
 }

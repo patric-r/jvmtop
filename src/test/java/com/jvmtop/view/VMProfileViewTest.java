@@ -1,7 +1,7 @@
 /**
  * jvmtop - java monitoring for the command-line
- *
- * Copyright (C) 2013 by Patric Rufflar. All rights reserved.
+ * 
+ * Copyright (C) 2015 by Patric Rufflar. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  *
@@ -20,42 +20,28 @@
  */
 package com.jvmtop.view;
 
+import static com.jvmtop.monitor.VMUtils.currentProcessID;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-/**
- *
- * Defines a console view.
- *
- * @author paru
- *
- */
-public interface ConsoleView
+import org.junit.Test;
+
+public class VMProfileViewTest
 {
 
-  public void setPrintStream(PrintStream printStream);
+  @Test
+  public void shouldDisplayCurrentProcessID() throws Exception
+  {
+    VMProfileView view = new VMProfileView();
 
-  /**
-   * Prints the view to PrintStream setted (default System.out)
-   *
-   * @throws Exception
-   */
-  public void printView() throws Exception;
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    view.setPrintStream(new PrintStream(outputStream));
+    view.printView();
 
-  /**
-   * Notifies that this view encountered issues and should be called again
-   * (e.g. due to exceptions)
-   *
-   * TODO: remove this method and use proper exception instead.
-   *
-   * @return
-   */
-  public boolean shouldExit();
+    assertTrue("Output doesn't contain current PID",
+        outputStream.toString().contains("PID " + currentProcessID()));
+  }
 
-  /**
-   * Requests the view to sleep (defined as "not outputting anything").
-   * However, the view is allowed to do some work / telemtry retrieval during
-   * sleep.
-   *
-   */
-  public void sleep(long millis) throws Exception;
 }

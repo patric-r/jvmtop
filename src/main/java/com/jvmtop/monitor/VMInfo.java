@@ -29,8 +29,12 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.ConnectException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,18 +42,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.jvmtop.openjdk.tools.ConnectionState;
+import com.jvmtop.openjdk.tools.LocalManagementInfoSource;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
+import com.jvmtop.openjdk.tools.ManagementInfoSource;
 import com.jvmtop.openjdk.tools.ProxyClient;
-import com.sun.tools.attach.AttachNotSupportedException;
+//import com.sun.tools.attach.AttachNotSupportedException;
 
 /**
- * VMInfo retrieves or updates the metrics for a specific remote jvm,
- * using ProxyClient.
+ * VMInfo retrieves or updates the metrics for a specific remote jvm, using
+ * ProxyClient.
  *
- * TODO: refactor this class, seperate:
- * - connect / attach code
- * - updating metrics
- * - model
+ * TODO: refactor this class, seperate: - connect / attach code - updating
+ * metrics - model
  *
  * @author paru
  *
@@ -58,7 +62,8 @@ public class VMInfo
 {
 
   /**
-   * Comparator providing ordering of VMInfo objects by the current heap usage of their monitored jvms
+   * Comparator providing ordering of VMInfo objects by the current heap usage
+   * of their monitored jvms
    *
    * @author paru
    *
@@ -68,13 +73,14 @@ public class VMInfo
     @Override
     public int compare(VMInfo o1, VMInfo o2)
     {
-      return Long.valueOf(o1.getHeapUsed()).compareTo(
-          Long.valueOf(o2.getHeapUsed()));
+      return Long.valueOf(o1.getHeapUsed())
+          .compareTo(Long.valueOf(o2.getHeapUsed()));
     }
   }
 
   /**
-   * Comparator providing ordering of VMInfo objects by the current CPU usage of their monitored jvms
+   * Comparator providing ordering of VMInfo objects by the current CPU usage
+   * of their monitored jvms
    *
    * @author paru
    *
@@ -84,14 +90,12 @@ public class VMInfo
     @Override
     public int compare(VMInfo o1, VMInfo o2)
     {
-      return Double.valueOf(o2.getCpuLoad()).compareTo(
-          Double.valueOf(o1.getCpuLoad()));
+      return Double.valueOf(o2.getCpuLoad())
+          .compareTo(Double.valueOf(o1.getCpuLoad()));
     }
   }
 
-  private ProxyClient                                             proxyClient          = null;
-
-  //private VirtualMachine                                          vm                   = null;
+  private ManagementInfoSource                                    managementInfoSource_   = null;
 
   private OperatingSystemMXBean                                   osBean;
 
@@ -101,15 +105,15 @@ public class VMInfo
 
   private long                                                    lastGcTime;
 
-  private long                                                    lastUpTime           = -1;
+  private long                                                    lastUpTime              = -1;
 
-  private long                                                    lastCPUTime          = -1;
+  private long                                                    lastCPUTime             = -1;
 
-  private long                                                    gcCount              = 0;
+  private long                                                    gcCount                 = 0;
 
-  private double                                                  cpuLoad              = 0.0;
+  private double                                                  cpuLoad                 = 0.0;
 
-  private double                                                  gcLoad               = 0.0;
+  private double                                                  gcLoad                  = 0.0;
 
   private MemoryMXBean                                            memoryMXBean;
 
@@ -117,17 +121,17 @@ public class VMInfo
 
   private MemoryUsage                                             nonHeapMemoryUsage;
 
-  private ThreadMXBean                                            threadMXBean;
+  private ThreadMXBean                                            threadMXBean_;
 
-  private VMInfoState                                             state_               = VMInfoState.INIT;
+  private VMInfoState                                             state_                  = VMInfoState.INIT;
 
-  private String                                                  rawId_               = null;
+  private Integer                                                 rawId_                  = null;
 
-  private LocalVirtualMachine                                     localVm_;
+  //	private LocalVirtualMachine localVm_;
 
-  public static final Comparator<VMInfo>                          USED_HEAP_COMPARATOR = new UsedHeapComparator();
+  public static final Comparator<VMInfo>                          USED_HEAP_COMPARATOR    = new UsedHeapComparator();
 
-  public static final Comparator<VMInfo>                          CPU_LOAD_COMPARATOR  = new CPULoadComparator();
+  public static final Comparator<VMInfo>                          CPU_LOAD_COMPARATOR     = new CPULoadComparator();
 
   private long                                                    deltaUptime_;
 
@@ -135,15 +139,15 @@ public class VMInfo
 
   private long                                                    deltaGcTime_;
 
-  private int                                                     updateErrorCount_    = 0;
+  private int                                                     updateErrorCount_       = 0;
 
   private long                                                    totalLoadedClassCount_;
 
   private ClassLoadingMXBean                                      classLoadingMXBean_;
 
-  private boolean                                                 deadlocksDetected_   = false;
+  private boolean                                                 deadlocksDetected_      = false;
 
-  private String                                                  vmVersion_           = null;
+  private String                                                  vmVersion_              = null;
 
   private String                                                  osUser_;
 
@@ -151,26 +155,50 @@ public class VMInfo
 
   private Map<String, String>                                     systemProperties_;
 
+  private Map<Long, ThreadStats>                                  previousThreadStatsMap_ = new HashMap<Long, ThreadStats>();
+
+  private long                                                    processCPUTime;
+
+  private String                                                  displayName_;
+
   /**
    * @param lastCPUProcessTime
-   * @param proxyClient
+   * @param managementInfoSource
    * @param vm
    * @throws RuntimeException
    */
-  public VMInfo(ProxyClient proxyClient, LocalVirtualMachine localVm,
-      String rawId) throws Exception
+  public VMInfo(ManagementInfoSource managementInfoSource, String displayName,
+      int vmid) throws Exception
   {
     super();
-    localVm_ = localVm;
-    rawId_ = rawId;
-    this.proxyClient = proxyClient;
-    //this.vm = vm;
+    displayName_ = displayName;
+    rawId_ = vmid;
+    managementInfoSource_ = managementInfoSource;
     state_ = VMInfoState.ATTACHED;
     update();
   }
 
   /**
+   * @param vmid
+   * @return
+   * @throws Exception 
+   */
+  public static VMInfo processNewVM(int vmid) throws Exception
+  {
+    LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
+        .getLocalVirtualMachine(vmid);
+    return processNewVM(localVirtualMachine, vmid);
+  }
+
+  public static VMInfo processCurrentVM() throws Exception
+  {
+    return new VMInfo(new LocalManagementInfoSource(), "currentVM",
+        VMUtils.currentProcessID());
+  }
+
+  /**
    * TODO: refactor to constructor?
+   * 
    * @param vmMap
    * @param localvm
    * @param vmid
@@ -179,7 +207,6 @@ public class VMInfo
    */
   public static VMInfo processNewVM(LocalVirtualMachine localvm, int vmid)
   {
-
     try
     {
       if (localvm == null || !localvm.isAttachable())
@@ -213,10 +240,9 @@ public class VMInfo
    * @throws Exception
    */
   private static VMInfo attachToVM(LocalVirtualMachine localvm, int vmid)
-      throws AttachNotSupportedException, IOException, NoSuchMethodException,
-      IllegalAccessException, InvocationTargetException, Exception
+      throws Exception
   {
-    //VirtualMachine vm = VirtualMachine.attach("" + vmid);
+    // VirtualMachine vm = VirtualMachine.attach("" + vmid);
     try
     {
 
@@ -228,7 +254,7 @@ public class VMInfo
             "connection refused (PID=" + vmid + ")");
         return createDeadVM(vmid, localvm);
       }
-      return new VMInfo(proxyClient, localvm, vmid + "");
+      return new VMInfo(proxyClient, localvm.displayName(), vmid);
     }
     catch (ConnectException rmiE)
     {
@@ -243,12 +269,12 @@ public class VMInfo
     catch (IOException e)
     {
       if ((e.getCause() != null
-          && e.getCause() instanceof AttachNotSupportedException)
+          && e.getCause().toString().contains("AttachNotSupportedException"))
           || e.getMessage().contains("Permission denied"))
       {
-      Logger.getLogger("jvmtop").log(Level.FINE,
-          "could not attach (PID=" + vmid + ")", e);
-      return createDeadVM(vmid, localvm, VMInfoState.CONNECTION_REFUSED);
+        Logger.getLogger("jvmtop").log(Level.FINE,
+            "could not attach (PID=" + vmid + ")", e);
+        return createDeadVM(vmid, localvm, VMInfoState.CONNECTION_REFUSED);
       }
       e.printStackTrace(System.err);
     }
@@ -266,7 +292,8 @@ public class VMInfo
   }
 
   /**
-   * Creates a dead VMInfo, representing a jvm which cannot be attached or other monitoring issues occurred.
+   * Creates a dead VMInfo, representing a jvm which cannot be attached or
+   * other monitoring issues occurred.
    *
    * @param vmid
    * @param localVm
@@ -278,8 +305,9 @@ public class VMInfo
   }
 
   /**
-   * Creates a dead VMInfo, representing a jvm in a given state
-   * which cannot be attached or other monitoring issues occurred.
+   * Creates a dead VMInfo, representing a jvm in a given state which cannot
+   * be attached or other monitoring issues occurred.
+   * 
    * @param vmid
    * @param localVm
    * @return
@@ -289,7 +317,8 @@ public class VMInfo
   {
     VMInfo vmInfo = new VMInfo();
     vmInfo.state_ = state;
-    vmInfo.localVm_ = localVm;
+    vmInfo.displayName_ = localVm.displayName();
+    vmInfo.rawId_ = vmid;
     return vmInfo;
   }
 
@@ -311,11 +340,9 @@ public class VMInfo
     if (state_ == VMInfoState.ERROR_DURING_ATTACH
         || state_ == VMInfoState.DETACHED
         || state_ == VMInfoState.CONNECTION_REFUSED)
-    {
       return;
-    }
 
-    if (proxyClient.isDead())
+    if (managementInfoSource_.isDead())
     {
       state_ = VMInfoState.DETACHED;
       return;
@@ -323,25 +350,25 @@ public class VMInfo
 
     try
     {
-      proxyClient.flush();
+      managementInfoSource_.flush();
+      osBean = managementInfoSource_.getSunOperatingSystemMXBean();
+      runtimeMXBean = managementInfoSource_.getRuntimeMXBean();
+      gcMXBeans = managementInfoSource_.getGarbageCollectorMXBeans();
+      classLoadingMXBean_ = managementInfoSource_.getClassLoadingMXBean();
+      memoryMXBean = managementInfoSource_.getMemoryMXBean();
+      threadMXBean_ = managementInfoSource_.getThreadMXBean();
 
-      osBean = proxyClient.getSunOperatingSystemMXBean();
-      runtimeMXBean = proxyClient.getRuntimeMXBean();
-      gcMXBeans = proxyClient.getGarbageCollectorMXBeans();
-      classLoadingMXBean_ = proxyClient.getClassLoadingMXBean();
-      memoryMXBean = proxyClient.getMemoryMXBean();
       heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
       nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
-      threadMXBean = proxyClient.getThreadMXBean();
 
-      //TODO: fetch jvm-constant data only once
+      // TODO: fetch jvm-constant data only once
       systemProperties_ = runtimeMXBean.getSystemProperties();
       vmVersion_ = extractShortVer();
       osUser_ = systemProperties_.get("user.name");
       updateInternal();
 
-      deadlocksDetected_ = threadMXBean.findDeadlockedThreads() != null
-          || threadMXBean.findMonitorDeadlockedThreads() != null;
+      deadlocksDetected_ = threadMXBean_.findDeadlockedThreads() != null
+          || threadMXBean_.findMonitorDeadlockedThreads() != null;
 
     }
     catch (Throwable e)
@@ -349,26 +376,23 @@ public class VMInfo
       Logger.getLogger("jvmtop").log(Level.FINE, "error during update", e);
       updateErrorCount_++;
       if (updateErrorCount_ > 10)
-      {
         state_ = VMInfoState.DETACHED;
-      }
       else
-      {
         state_ = VMInfoState.ATTACHED_UPDATE_ERROR;
-      }
     }
   }
 
   /**
    * calculates internal delta metrics
+   * 
    * @throws Exception
    */
   private void updateInternal() throws Exception
   {
     long uptime = runtimeMXBean.getUptime();
 
-    long cpuTime = proxyClient.getProcessCpuTime();
-    //long cpuTime = osBean.getProcessCpuTime();
+    long cpuTime = managementInfoSource_.getProcessCpuTime();
+    // long cpuTime = osBean.getProcessCpuTime();
     long gcTime = sumGCTimes();
     gcCount = sumGCCount();
     if (lastUpTime > 0 && lastCPUTime > 0 && gcTime > 0)
@@ -385,13 +409,42 @@ public class VMInfo
     lastCPUTime = cpuTime;
     lastGcTime = gcTime;
 
+    processCPUTime = getProxyClient().getProcessCpuTime();
+
     totalLoadedClassCount_ = classLoadingMXBean_.getTotalLoadedClassCount();
 
-    threadCount_ = threadMXBean.getThreadCount();
+    threadCount_ = threadMXBean_.getThreadCount();
+
+    updateThreadsStatistics();
+  }
+
+  /**
+   * 
+   */
+  private void updateThreadsStatistics()
+  {
+    Map<Long, ThreadStats> newThreadStatsMap = new HashMap<Long, ThreadStats>();
+
+    for (Long tid : threadMXBean_.getAllThreadIds())
+    {
+      long threadCpuTime = threadMXBean_.getThreadCpuTime(tid);
+      ThreadStats newStats = new ThreadStats(tid, this);
+      ThreadStats oldStats = previousThreadStatsMap_.get(tid);
+      if (oldStats != null)
+      {
+        newStats
+            .setDeltaCPUTime(threadCpuTime - oldStats.getTotalThreadCpuTime());
+      }
+      newStats.setTotalThreadCPUTime(threadCpuTime);
+      newThreadStatsMap.put(tid, newStats);
+    }
+
+    previousThreadStatsMap_ = newThreadStatsMap;
   }
 
   /**
    * calculates a "load", given on two deltas
+   * 
    * @param deltaUptime
    * @param deltaTime
    * @return
@@ -399,38 +452,34 @@ public class VMInfo
   private double calcLoad(double deltaUptime, double deltaTime)
   {
     if (deltaTime <= 0 || deltaUptime == 0)
-    {
       return 0.0;
-    }
     return Math.min(99.0,
         deltaTime / (deltaUptime * osBean.getAvailableProcessors()));
   }
 
   /**
    * Returns the sum of all GC times
+   * 
    * @return
    */
   private long sumGCTimes()
   {
     long sum = 0;
     for (java.lang.management.GarbageCollectorMXBean mxBean : gcMXBeans)
-    {
       sum += mxBean.getCollectionTime();
-    }
     return sum;
   }
 
   /**
    * Returns the sum of all GC invocations
+   * 
    * @return
    */
   private long sumGCCount()
   {
     long sum = 0;
     for (java.lang.management.GarbageCollectorMXBean mxBean : gcMXBeans)
-    {
       sum += mxBean.getCollectionCount();
-    }
     return sum;
   }
 
@@ -488,24 +537,24 @@ public class VMInfo
   /**
    * @return the proxyClient
    */
-  public ProxyClient getProxyClient()
+  public ManagementInfoSource getProxyClient()
   {
-    return proxyClient;
+    return managementInfoSource_;
   }
 
   public String getDisplayName()
   {
-    return localVm_.displayName();
+    return displayName_;
   }
 
   public Integer getId()
   {
-    return localVm_.vmid();
+    return rawId_;
   }
 
   public String getRawId()
   {
-    return rawId_;
+    return "" + rawId_;
   }
 
   public long getGcCount()
@@ -517,11 +566,8 @@ public class VMInfo
    * @return the vm
    */
   /*
-  public VirtualMachine getVm()
-  {
-    return vm;
-  }
-  */
+   * public VirtualMachine getVm() { return vm; }
+   */
 
   public String getVMVersion()
   {
@@ -555,7 +601,7 @@ public class VMInfo
 
   public ThreadMXBean getThreadMXBean()
   {
-    return threadMXBean;
+    return threadMXBean_;
   }
 
   public OperatingSystemMXBean getOSBean()
@@ -584,8 +630,9 @@ public class VMInfo
   }
 
   /**
-   * Extracts the jvmtop "short version" out of different properties
-   * TODO: should this be refactored?
+   * Extracts the jvmtop "short version" out of different properties TODO:
+   * should this be refactored?
+   * 
    * @param runtimeMXBean
    * @return
    */
@@ -601,15 +648,30 @@ public class VMInfo
     {
       return vmVendor.charAt(0) + matcher.group(1) + "U" + matcher.group(2);
     }
-    else
-    {
-      pattern = Pattern.compile(".*-(.*)_.*");
-      matcher = pattern.matcher(vmVer);
-      if (matcher.matches())
-      {
-        return vmVendor.charAt(0) + matcher.group(1).substring(2, 6);
-      }
-      return vmVer;
-    }
+
+    pattern = Pattern.compile(".*-(.*)_.*");
+    matcher = pattern.matcher(vmVer);
+    if (matcher.matches())
+      return vmVendor.charAt(0) + matcher.group(1).substring(2, 6);
+    return vmVer;
   }
+
+  public Map<Long, ThreadStats> getThreadStats()
+  {
+    return previousThreadStatsMap_;
+  }
+
+  public long getProcessCPUTime()
+  {
+    return processCPUTime;
+  }
+
+  public List<ThreadStats> getThreadInfoSortedByCPU()
+  {
+    List<ThreadStats> sortedThreadStats = new ArrayList<ThreadStats>(
+        getThreadStats().values());
+    Collections.sort(sortedThreadStats);
+    return sortedThreadStats;
+  }
+
 }

@@ -56,15 +56,15 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 
 public class LocalVirtualMachine
 {
-  private String  address;
+  private String         address;
 
-  private String  commandLine;
+  private String         commandLine;
 
-  private String  displayName;
+  private String         displayName;
 
-  private int     vmid;
+  private int            vmid;
 
-  private boolean isAttachSupported;
+  private boolean        isAttachSupported;
 
   private static boolean J9Mode = false;
 
@@ -101,9 +101,7 @@ public class LocalVirtualMachine
       File jarfile = new File(res[0]);
       String displayName = jarfile.getName();
       if (res.length == 2)
-      {
         displayName += " " + res[1];
-      }
       return displayName;
     }
     return commandLine;
@@ -127,24 +125,18 @@ public class LocalVirtualMachine
   public void startManagementAgent() throws IOException
   {
     if (address != null)
-    {
       // already started
       return;
-    }
 
     if (!isAttachable())
-    {
       throw new IOException("This virtual machine \"" + vmid
           + "\" does not support dynamic attach.");
-    }
 
     loadManagementAgent();
     // fails to load or start the management agent
     if (address == null)
-    {
       // should never reach here
       throw new IOException("Fails to find connector address");
-    }
   }
 
   public String connectorAddress()
@@ -189,11 +181,9 @@ public class LocalVirtualMachine
   private static void getMonitoredVMs(Map<Integer, LocalVirtualMachine> map,
       Map<Integer, LocalVirtualMachine> existingMap)
   {
-    //Unsupported on J9
+    // Unsupported on J9
     if (J9Mode)
-    {
       return;
-    }
     MonitoredHost host;
     Set vms;
     try
@@ -212,13 +202,12 @@ public class LocalVirtualMachine
     for (Object vmid : vms)
     {
       if (existingMap.containsKey(vmid))
-      {
         continue;
-      }
       if (vmid instanceof Integer)
       {
         int pid = ((Integer) vmid).intValue();
-        String name = vmid.toString(); // default to pid if name not available
+        String name = vmid.toString(); // default to pid if name not
+        // available
         boolean attachable = false;
         String address = null;
         try
@@ -234,8 +223,8 @@ public class LocalVirtualMachine
         {
           // ignore
         }
-        map.put((Integer) vmid, new LocalVirtualMachine(pid, name, attachable,
-            address));
+        map.put((Integer) vmid,
+            new LocalVirtualMachine(pid, name, attachable, address));
       }
     }
   }
@@ -247,7 +236,6 @@ public class LocalVirtualMachine
   {
     List<VirtualMachineDescriptor> vms = VirtualMachine.list();
     for (VirtualMachineDescriptor vmd : vms)
-    {
       try
       {
         Integer vmid = Integer.valueOf(vmd.id());
@@ -276,16 +264,14 @@ public class LocalVirtualMachine
           {
             // ignore
           }
-          map.put(vmid,
-              new LocalVirtualMachine(vmid.intValue(), vmd.displayName(),
-                  attachable, address));
+          map.put(vmid, new LocalVirtualMachine(vmid.intValue(),
+              vmd.displayName(), attachable, address));
         }
       }
       catch (NumberFormatException e)
       {
         // do not support vmid different than pid
       }
-    }
   }
 
   public static LocalVirtualMachine getLocalVirtualMachine(int vmid)
@@ -304,12 +290,12 @@ public class LocalVirtualMachine
       String address = null;
       String name = String.valueOf(vmid); // default display name to pid
 
-        VirtualMachine vm = VirtualMachine.attach(name);
-        attachable = true;
-        Properties agentProps = vm.getAgentProperties();
-        address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
-        vm.detach();
-        lvm = new LocalVirtualMachine(vmid, name, attachable, address);
+      VirtualMachine vm = VirtualMachine.attach(name);
+      attachable = true;
+      Properties agentProps = vm.getAgentProperties();
+      address = (String) agentProps.get(LOCAL_CONNECTOR_ADDRESS_PROP);
+      vm.detach();
+      lvm = new LocalVirtualMachine(vmid, name, attachable, address);
 
     }
     return lvm;
@@ -361,9 +347,7 @@ public class LocalVirtualMachine
           + "management-agent.jar";
       f = new File(agent);
       if (!f.exists())
-      {
         throw new IOException("Management agent not found");
-      }
     }
 
     agent = f.getCanonicalPath();
