@@ -7,6 +7,7 @@
     <groupId>com.jvmtop</groupId>
     <artifactId>jvmtop</artifactId>
     <version>0.9.0-SNAPSHOT</version>
+    <description>Java monitoring for the command-line, profiler included</description>
 
     <dependencies>
         <dependency>
@@ -91,7 +92,69 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>  
+            </plugin>
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jdeb</goal>
+                        </goals>
+                        <configuration>
+                            <verbose>true</verbose>
+                            <snapshotExpand>true</snapshotExpand>
+                            <!-- expand "SNAPSHOT" to what is in the "PATCH" env variable, if empty timestamp will be used -->
+                            <snapshotEnv>PATCH</snapshotEnv>
+                            <verbose>true</verbose>
+                            <controlDir>${basedir}/src/deb/control</controlDir>
+                            <dataSet>
+                                <data>
+                                    <src>${project.build.directory}/${project.build.finalName}.jar</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/share/jvmtop/lib</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+                                <data>
+                                    <src>${basedir}/src/main/wrappers/jvmtop.sh</src>
+                                    <dst>jvmtop</dst>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <filemode>755</filemode>
+                                        <prefix>/usr/bin</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+                                <data>
+                                    <type>link</type>
+                                    <symlink>true</symlink>
+                                    <linkName>/usr/share/java/jvmtop.jar</linkName>
+                                    <linkTarget>/usr/share/jvmtop/lib/${project.build.finalName}.jar</linkTarget>
+                                </data>
+                                <data>
+                                    <type>template</type>
+                                    <paths>
+                                        <path>var/lib/${project.artifactId}</path>
+                                    </paths>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <user>root</user>
+                                        <group>root</group>
+                                    </mapper>
+                                </data>
+                            </dataSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
