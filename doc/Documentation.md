@@ -63,6 +63,31 @@ USERNAME = Username which owns this jvm process
 DL = If !D is shown if the jvm detected a thread deadlock
 ```
 
+### JVM overview CSV mode ###
+Command-line: `jvmtop.sh --csv`
+
+The CSV option removes the header and enables easy and parsing (e.g. in R).
+
+```
+PID,MAIN-CLASS,HPCUR,HPMAX,NHCUR,NHMAX,CPU,GC,VM,USERNAME,#T,DL
+3370,wrapperSimpleApp,165m,455m,109m,176m,0.12%,0.00%,S6U37,web,21
+27338,WatchdogManager,11m,28m,23m,130m,0.00%,0.00%,6U37 web,,31
+19187,m.jvmtop.JvmTop,20m,3544m,13m,130m,0.93%,0.47%,S6U37,web,20
+16733,artup.Bootstrap,159m,455m,166m,304m,0.12%,0.00%,S6U37,web,46
+```
+
+### JVM overview timestamp (+ optional CSV) mode ###
+Command-line: `jvmtop.sh --ts --csv`
+
+The timestamp option is a `new Date().toTime()` command for continuous monitoring.
+
+```
+PID,MAIN-CLASS,HPCUR,HPMAX,NHCUR,NHMAX,CPU,GC,VM,USERNAME,#T,DL,TS
+3370,wrapperSimpleApp,165m,455m,109m,176m,0.12%,0.00%,S6U37,web,21,1480337426048
+27338,WatchdogManager,11m,28m,23m,130m,0.00%,0.00%,6U37 web,,31,1480337426048
+19187,m.jvmtop.JvmTop,20m,3544m,13m,130m,0.93%,0.47%,S6U37,web,20,1480337426048
+16733,artup.Bootstrap,159m,455m,166m,304m,0.12%,0.00%,S6U37,web,46,1480337426048
+```
 
 ### Detail mode (Single-VM monitoring) ###
 

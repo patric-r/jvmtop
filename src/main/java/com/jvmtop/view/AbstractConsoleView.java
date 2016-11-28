@@ -49,12 +49,12 @@ public abstract class AbstractConsoleView implements ConsoleView
   /**
    *
    */
-  public AbstractConsoleView(Integer width)
+  public AbstractConsoleView(DisplayOptions opts)
   {
     super();
-    if (width == null) width = MIN_WIDTH;
-    if (width < MIN_WIDTH) width = MIN_WIDTH;
-    this.width = width;
+    if (opts.getWidth() == null) width = MIN_WIDTH;
+    else if (opts.getWidth() < MIN_WIDTH) width = MIN_WIDTH;
+    else this.width = opts.getWidth();
   }
 
   /**
