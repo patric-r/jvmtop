@@ -20,6 +20,10 @@
  */
 package com.jvmtop;
 
+import com.jvmtop.view.*;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -32,14 +36,6 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-
-import com.jvmtop.view.ConsoleView;
-import com.jvmtop.view.VMDetailView;
-import com.jvmtop.view.VMOverviewView;
-import com.jvmtop.view.VMProfileView;
 
 /**
  * JvmTop entry point class.
@@ -73,8 +69,9 @@ public class JvmTop
   private int                                        maxIterations_          = -1;
 
   private static Logger                              logger;
+  private static DisplayOptions opts;
 
-  private static OptionParser createOptionParser()
+    private static OptionParser createOptionParser()
   {
     OptionParser parser = new OptionParser();
     parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }),
@@ -111,6 +108,9 @@ public class JvmTop
         .accepts("threadnamewidth",
             "sets displayed thread name length in detail mode (defaults to 30)")
         .withRequiredArg().ofType(Integer.class);
+
+      parser.accepts("ts", "Display timestamp");
+      parser.accepts("csv", "Use CSV output");
 
     return parser;
   }
@@ -202,6 +202,20 @@ public class JvmTop
       threadNameWidth = (Integer) a.valueOf("threadnamewidth");
     }
 
+    boolean isCsv = false;
+    if (a.has("csv"))
+    {
+        isCsv = true;
+    }
+
+    boolean isTS = false;
+    if (a.has("ts"))
+    {
+        isTS = true;
+    }
+
+    opts = new DisplayOptions(isCsv, isTS, width);
+
     if (sysInfoOption)
     {
       outputSystemProps();
@@ -213,17 +227,17 @@ public class JvmTop
       jvmTop.setMaxIterations(iterations);
       if (pid == null)
       {
-        jvmTop.run(new VMOverviewView(width));
+        jvmTop.run(new VMOverviewView(opts));
       }
       else
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, width));
+          jvmTop.run(new VMProfileView(pid, opts));
         }
         else
         {
-          VMDetailView vmDetailView = new VMDetailView(pid, width);
+          VMDetailView vmDetailView = new VMDetailView(pid, opts);
           vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
           if (threadlimit != null)
           {
@@ -300,7 +314,7 @@ public class JvmTop
         {
           clearTerminal();
         }
-        printTopBar();
+        if(!opts.isCSV()) printTopBar();
         view.printView();
         System.out.flush();
         iterations++;

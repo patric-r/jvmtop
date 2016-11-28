@@ -20,17 +20,12 @@
  */
 package com.jvmtop.view;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * "overview" view, providing the most-important metrics of all accessible jvms in a top-like manner.
@@ -40,13 +35,14 @@ import com.jvmtop.openjdk.tools.LocalVirtualMachine;
  */
 public class VMOverviewView extends AbstractConsoleView
 {
-
+  private DisplayOptions opts;
   private List<VMInfo>                      vmInfoList = new ArrayList<VMInfo>();
 
   private Map<Integer, LocalVirtualMachine> vmMap      = new HashMap<Integer, LocalVirtualMachine>();
 
-  public VMOverviewView(Integer width) {
-    super(width);
+  public VMOverviewView(DisplayOptions opts) {
+    super(opts);
+    this.opts = opts;
   }
 
   public void printView() throws Exception
@@ -62,8 +58,7 @@ public class VMOverviewView extends AbstractConsoleView
 
     for (VMInfo vmInfo : vmInfoList)
     {
-      if (vmInfo.getState() == VMInfoState.ATTACHED
-)
+      if (vmInfo.getState() == VMInfoState.ATTACHED)
       {
         printVM(vmInfo);
       }
@@ -71,19 +66,20 @@ public class VMOverviewView extends AbstractConsoleView
       {
         System.out
             .printf(
-                "%5d %-15.15s [ERROR: Could not fetch telemetries (Process DEAD?)] %n",
+                getErrorFormat("%5d %-15.15s", "[ERROR: Could not fetch telemetries (Process DEAD?)]"),
                 vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
 
       }
       else if (vmInfo.getState() == VMInfoState.ERROR_DURING_ATTACH)
       {
-        System.out.printf("%5d %-15.15s [ERROR: Could not attach to VM] %n",
+        System.out.printf(
+                getErrorFormat("%5d %-15.15s","[ERROR: Could not attach to VM]"),
             vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
       }
       else if (vmInfo.getState() == VMInfoState.CONNECTION_REFUSED)
       {
         System.out.printf(
-            "%5d %-15.15s [ERROR: Connection refused/access denied] %n",
+                getErrorFormat("%5d %-15.15s","[ERROR: Connection refused/access denied]"),
             vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
       }
 
@@ -104,8 +100,6 @@ public class VMOverviewView extends AbstractConsoleView
   }
 
   /**
-   * @param localvm
-   * @param vmid
    * @param vmInfo
    * @return
    * @throws Exception
@@ -119,16 +113,27 @@ public class VMOverviewView extends AbstractConsoleView
       deadlockState = "!D";
     }
 
-    System.out
-        .printf(
-            "%5d %-15.15s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s%n",
-            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()),
-            toMB(vmInfo.getHeapUsed()), toMB(vmInfo.getHeapMax()),
-            toMB(vmInfo.getNonHeapUsed()), toMB(vmInfo.getNonHeapMax()),
-            vmInfo.getCpuLoad() * 100, vmInfo.getGcLoad() * 100,
-            vmInfo.getVMVersion(), vmInfo.getOSUser(), vmInfo.getThreadCount(),
-            deadlockState);
-
+    if(opts.isDisplayTS()) {
+        System.out
+                .printf(
+                        getFormat(),
+                        vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()),
+                        toMB(vmInfo.getHeapUsed()), toMB(vmInfo.getHeapMax()),
+                        toMB(vmInfo.getNonHeapUsed()), toMB(vmInfo.getNonHeapMax()),
+                        vmInfo.getCpuLoad() * 100, vmInfo.getGcLoad() * 100,
+                        vmInfo.getVMVersion(), vmInfo.getOSUser(), vmInfo.getThreadCount(),
+                        deadlockState, new Date().getTime());
+    }else {
+        System.out
+                .printf(
+                        getFormat(),
+                        vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()),
+                        toMB(vmInfo.getHeapUsed()), toMB(vmInfo.getHeapMax()),
+                        toMB(vmInfo.getNonHeapUsed()), toMB(vmInfo.getNonHeapMax()),
+                        vmInfo.getCpuLoad() * 100, vmInfo.getGcLoad() * 100,
+                        vmInfo.getVMVersion(), vmInfo.getOSUser(), vmInfo.getThreadCount(),
+                        deadlockState);
+    }
   }
 
   /**
@@ -143,11 +148,6 @@ public class VMOverviewView extends AbstractConsoleView
     }
   }
 
-  /**
-   * @param vmMap
-   * @param vmMap
-   * @param set
-   */
   private void scanForNewVMs()
   {
     Map<Integer, LocalVirtualMachine> machines = LocalVirtualMachine
@@ -173,9 +173,68 @@ public class VMOverviewView extends AbstractConsoleView
   */
   private void printHeader()
   {
-    System.out.printf("%5s %-15.15s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s%n",
-        "PID", "MAIN-CLASS", "HPCUR", "HPMAX", "NHCUR", "NHMAX", "CPU", "GC",
-        "VM", "USERNAME", "#T", "DL");
+    if(opts.isDisplayTS()){
+        System.out.printf(getHeader(),
+                "PID", "MAIN-CLASS", "HPCUR", "HPMAX", "NHCUR", "NHMAX", "CPU", "GC",
+                "VM", "USERNAME", "#T", "DL", "TS" );
+    }else {
+        System.out.printf(getHeader(),
+                "PID", "MAIN-CLASS", "HPCUR", "HPMAX", "NHCUR", "NHMAX", "CPU", "GC",
+                "VM", "USERNAME", "#T", "DL");
+    }
   }
+
+  private String getFormat(){
+      String format = "%5d %-15.15s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s";
+      return format(format);
+  }
+
+    private String getHeader(){
+        String format = "%5s %-15.15s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s";
+        return format(format);
+    }
+
+    private String getErrorFormat(String format, String errorMsg){
+        String res = format(format, false, false);
+        return res + errorMsg + "%n";
+    }
+
+    private String format(String _default){
+        return format(_default, true, true);
+    }
+
+    private String removePadding(String format){
+        return format.replaceAll("\\d","").replace("-","").replace(".","");
+    }
+
+    /**
+     * Format printf statement
+     * @param _default default statement including padding
+     * @param c add line for TS (N/A for error)
+     * @param n add newline (N/A for error)
+     * @return
+     */
+    private String format(String _default, boolean c, boolean n){
+        String format = _default;
+        String formatCsv = removePadding(format);
+        if(opts.isDisplayTS()){
+            if(opts.isCSV()){
+                format = formatCsv;
+                if(c) format += " %s";
+                if(n) format += "%n";
+            }else {
+                if(c) format += " %5s";
+                if(n) format += "%n";
+            }
+        } else{
+            if(opts.isCSV()) format = formatCsv;
+            if(n) format += "%n";
+        }
+        if(opts.isCSV()){
+            format = format.replace(" ", ",");
+            //if(format.endsWith(",%n")) format.replace(",%n","%n");
+        }
+        return format;
+    }
 
 }

@@ -20,13 +20,13 @@
  */
 package com.jvmtop.view;
 
-import java.util.Iterator;
-
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.profiler.CPUSampler;
 import com.jvmtop.profiler.MethodStats;
+
+import java.util.Iterator;
 
 /**
  * CPU sampling-based profiler view which shows methods with top CPU usage.
@@ -41,9 +41,9 @@ public class VMProfileView extends AbstractConsoleView
 
   private VMInfo     vmInfo_;
 
-  public VMProfileView(int vmid, Integer width) throws Exception
+  public VMProfileView(int vmid, DisplayOptions opts) throws Exception
   {
-    super(width);
+    super(opts);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);

@@ -21,16 +21,12 @@
 
 package com.jvmtop.view;
 
-import java.lang.management.ThreadInfo;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
+
+import java.lang.management.ThreadInfo;
+import java.util.*;
 
 /**
  * "detail" view, printing detail metrics of a specific jvm.
@@ -55,9 +51,9 @@ public class VMDetailView extends AbstractConsoleView
   //TODO: refactor
   private Map<Long, Long> previousThreadCPUMillis   = new HashMap<Long, Long>();
 
-  public VMDetailView(int vmid, Integer width) throws Exception
+  public VMDetailView(int vmid, DisplayOptions opts) throws Exception
   {
-    super(width);
+    super(opts);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
