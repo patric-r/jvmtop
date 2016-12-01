@@ -1,0 +1,43 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '1.2.4'
+  id 'java'
+}
+
+group   = 'com.jvmtop'
+version = '0.9.0-SNAPSHOT'
+
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
+dependencies {
+  compile 'net.sf.jopt-simple:jopt-simple:4.5'
+  compile files(javax.tools.ToolProvider.systemToolClassLoader.URLs)
+}
+
+// we want to keep supporting java 6 runtimes even under java > 6
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+// by default, clean and build an executable jar file 
+defaultTasks = ['clean', 'shadowJar']
+
+// the shadowjar builds an executable jar file from the runtime 
+// dependencies.
+// https://github.com/johnrengelman/shadow
+shadowJar {
+  manifest {
+    attributes(
+      'Main-Class': 'com.jvmtop.JvmTop'
+    )
+  }
+}
+
+// execute './gradlew wrapper' or 'gradle wrapper' to regenerate the 
+// gradle wrapper ./gradlew and ./gradlew.bat files 
+// https://docs.gradle.org/current/userguide/gradle_wrapper.html
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.14.1'
+  jarFile       = ".gradle/wrapper/gradle-wrapper.jar"
+}
