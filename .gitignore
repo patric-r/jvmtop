@@ -13,3 +13,9 @@
 # Maven
 log/
 target/
+
+# Gradle 
+build/
+.gradle/*
+!.gradle/wrapper
+
