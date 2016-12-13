@@ -4,7 +4,7 @@
 #
 # author: Markus Kolb
 # 
-DIR=$( cd $(dirname $0) ; pwd -P )
+DIR=$(dirname "$(readlink -f "$0")")
 
 if [ -z "$JAVA_HOME" ] ; then
         JAVA_HOME=`readlink -f \`which java 2>/dev/null\` 2>/dev/null | \
