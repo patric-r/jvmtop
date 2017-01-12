@@ -71,19 +71,19 @@ public class VMOverviewView extends AbstractConsoleView
       {
         System.out
             .printf(
-                "%5d %-15.15s [ERROR: Could not fetch telemetries (Process DEAD?)] %n",
+                "%5d %-25.25s [ERROR: Could not fetch telemetries (Process DEAD?)] %n",
                 vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
 
       }
       else if (vmInfo.getState() == VMInfoState.ERROR_DURING_ATTACH)
       {
-        System.out.printf("%5d %-15.15s [ERROR: Could not attach to VM] %n",
+        System.out.printf("%5d %-25.25s [ERROR: Could not attach to VM] %n",
             vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
       }
       else if (vmInfo.getState() == VMInfoState.CONNECTION_REFUSED)
       {
         System.out.printf(
-            "%5d %-15.15s [ERROR: Connection refused/access denied] %n",
+            "%5d %-25.25s [ERROR: Connection refused/access denied] %n",
             vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
       }
 
@@ -121,7 +121,7 @@ public class VMOverviewView extends AbstractConsoleView
 
     System.out
         .printf(
-            "%5d %-15.15s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s%n",
+            "%5d %-25.25s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s%n",
             vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()),
             toMB(vmInfo.getHeapUsed()), toMB(vmInfo.getHeapMax()),
             toMB(vmInfo.getNonHeapUsed()), toMB(vmInfo.getNonHeapMax()),
@@ -173,7 +173,7 @@ public class VMOverviewView extends AbstractConsoleView
   */
   private void printHeader()
   {
-    System.out.printf("%5s %-15.15s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s%n",
+    System.out.printf("%5s %-25.25s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s%n",
         "PID", "MAIN-CLASS", "HPCUR", "HPMAX", "NHCUR", "NHMAX", "CPU", "GC",
         "VM", "USERNAME", "#T", "DL");
   }

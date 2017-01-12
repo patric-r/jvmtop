@@ -57,7 +57,7 @@ import com.jvmtop.view.VMProfileView;
 public class JvmTop
 {
 
-  public static final String                         VERSION                 = "0.8.0 alpha";
+  public static final String                         VERSION                 = "0.9.1 beta";
 
   private Double                                     delay_                  = 1.0;
 
@@ -112,6 +112,12 @@ public class JvmTop
             "sets displayed thread name length in detail mode (defaults to 30)")
         .withRequiredArg().ofType(Integer.class);
 
+    parser
+    .acceptsAll(Arrays.asList(new String[] { "s", "threadsearch" }),
+        "search string in showed fields")
+    .withRequiredArg().ofType(String.class);
+
+    
     return parser;
   }
 
@@ -149,6 +155,8 @@ public class JvmTop
     boolean threadLimitEnabled = true;
 
     Integer threadNameWidth = null;
+    
+    String threadNameSearch = null;
 
     if (a.hasArgument("delay"))
     {
@@ -202,6 +210,11 @@ public class JvmTop
       threadNameWidth = (Integer) a.valueOf("threadnamewidth");
     }
 
+    if (a.hasArgument("threadsearch"))
+    {
+      threadNameSearch = (String) a.valueOf("threadsearch");
+    }
+
     if (sysInfoOption)
     {
       outputSystemProps();
@@ -232,6 +245,10 @@ public class JvmTop
           if (threadNameWidth != null)
           {
             vmDetailView.setThreadNameDisplayWidth(threadNameWidth);
+          }
+          if (threadNameSearch != null)
+          {
+            vmDetailView.setThreadSearch(threadNameSearch);
           }
           jvmTop.run(vmDetailView);
 
@@ -330,9 +347,8 @@ public class JvmTop
   {
     if (System.getProperty("os.name").contains("Windows"))
     {
-      //hack
-      System.out
-          .printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
+      System.out.print("\033[H\033[2J");  
+      System.out.flush();  
     }
     else if (System.getProperty("jvmtop.altClear") != null)
     {

@@ -46,12 +46,13 @@ public class VMDetailView extends AbstractConsoleView
 
   private boolean         sortByTotalCPU_           = false;
 
-  private int             numberOfDisplayedThreads_ = 10;
+  private int             numberOfDisplayedThreads_ = 100;
 
-  private int             threadNameDisplayWidth_   = 30;
+  private int             threadNameDisplayWidth_   = 65;
 
-  private boolean         displayedThreadLimit_     = true;
+  private boolean         displayedThreadLimit_     = false;
 
+  private String          threadSearch              = null;
   //TODO: refactor
   private Map<Long, Long> previousThreadCPUMillis   = new HashMap<Long, Long>();
 
@@ -120,15 +121,15 @@ public class VMDetailView extends AbstractConsoleView
       System.out.printf(" ARGS: [UNKNOWN] %n");
     }
 
-    String join = join(vmInfo_.getRuntimeMXBean().getInputArguments(), " ");
-    if (join.length() > 65)
-    {
-      System.out.printf(" VMARGS: %s[...]%n", leftStr(join, 65));
-    }
-    else
-    {
-      System.out.printf(" VMARGS: %s%n", join);
-    }
+    String join = "\n " + join(vmInfo_.getRuntimeMXBean().getInputArguments(), "\n ");
+//    if (join.length() > 65)
+//    {
+//      System.out.printf(" VMARGS: %s[...]%n", leftStr(join, 65));
+//    }
+//    else
+//    {
+      System.out.printf(" VMARGS:  %s%n", join);
+//    }
 
     System.out.printf(" VM: %s %s %s%n", properties.get("java.vendor"),
         properties.get("java.vm.name"), properties.get("java.version"));
@@ -159,10 +160,11 @@ public class VMDetailView extends AbstractConsoleView
   /**
    * @throws Exception
    */
+  @SuppressWarnings("unchecked")
   private void printTopThreads() throws Exception
   {
     System.out.printf(" %6s %-" + threadNameDisplayWidth_
-        + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU",
+        + "s  %-13s %-8s  %-8s %-5s %n", "TID", "NAME", "STATE", "CPU",
         "TOTALCPU", "BLOCKEDBY");
 
     if (vmInfo_.getThreadMXBean().isThreadCpuTimeSupported())
@@ -173,19 +175,30 @@ public class VMDetailView extends AbstractConsoleView
 
       Map<Long, Long> cpuTimeMap = new TreeMap<Long, Long>();
 
+      String threadSearchLower = (threadSearch==null?null:threadSearch.toLowerCase());
       for (Long tid : vmInfo_.getThreadMXBean().getAllThreadIds())
       {
         long threadCpuTime = vmInfo_.getThreadMXBean().getThreadCpuTime(tid);
+        ThreadInfo info = vmInfo_.getThreadMXBean().getThreadInfo(tid);
         long deltaThreadCpuTime = 0;
         if (previousThreadCPUMillis.containsKey(tid))
         {
           deltaThreadCpuTime = threadCpuTime - previousThreadCPUMillis.get(tid);
-
-          cpuTimeMap.put(tid, deltaThreadCpuTime);
+          if (threadSearch != null && info != null) {
+            if (info.getThreadName().toLowerCase().contains(threadSearchLower)
+              ||(""+info.getThreadState()).toLowerCase().contains(threadSearchLower)
+              ||(tid.toString()).toLowerCase().contains(threadSearchLower))
+            {
+              cpuTimeMap.put(tid, deltaThreadCpuTime);
+            }
+          }           
+          else
+          {
+            cpuTimeMap.put(tid, deltaThreadCpuTime);
+          }
         }
         newThreadCPUMillis.put(tid, threadCpuTime);
       }
-
       cpuTimeMap = sortByValue(cpuTimeMap, true);
 
       int displayedThreads = 0;
@@ -202,15 +215,17 @@ public class VMDetailView extends AbstractConsoleView
         {
           System.out.printf(
               " %6d %-" + threadNameDisplayWidth_
-                  + "s  %13s %5.2f%%    %5.2f%% %5s %n",
+                  + "s  %-13s %5.2f%%    %5.2f%% %5s %n",
               tid,
               leftStr(info.getThreadName(), threadNameDisplayWidth_),
               info.getThreadState(),
               getThreadCPUUtilization(cpuTimeMap.get(tid),
                   vmInfo_.getDeltaUptime()),
-              getThreadCPUUtilization(vmInfo_.getThreadMXBean()
-                  .getThreadCpuTime(tid), vmInfo_.getProxyClient()
-                  .getProcessCpuTime(), 1), getBlockedThread(info));
+              getThreadCPUUtilization(
+                  vmInfo_.getThreadMXBean().getThreadCpuTime(tid), 
+                  vmInfo_.getProxyClient().getProcessCpuTime(), 
+                  1), 
+              getBlockedThread(info));
         }
       }
       if (newThreadCPUMillis.size() >= numberOfDisplayedThreads_
@@ -273,6 +288,17 @@ public class VMDetailView extends AbstractConsoleView
     this.threadNameDisplayWidth_ = threadNameDisplayWidth_;
   }
 
+  public String getThreadSearch()
+  {
+    return threadSearch;
+  }
+
+  public void setThreadSearch(String threadSearch_)
+  {
+    this.threadSearch = threadSearch_;
+  }
+
+  
   private double getThreadCPUUtilization(long deltaThreadCpuTime, long totalTime)
   {
     return getThreadCPUUtilization(deltaThreadCpuTime, totalTime, 1000 * 1000);
