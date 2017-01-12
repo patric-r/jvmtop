@@ -4,10 +4,19 @@
     <id>distribution</id>
     <formats>
         <format>tar.gz</format>
+        <format>zip</format>
     </formats>
     <files>
         <file>
             <source>INSTALL</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>LICENSE</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+        <file>
+            <source>README.md</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
