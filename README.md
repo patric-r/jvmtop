@@ -1,7 +1,7 @@
 <b>jvmtop</b> is a lightweight console application to monitor all accessible, running jvms on a machine.<br>
 In a top-like manner, it displays <a href='https://github.com/patric-r/jvmtop/blob/master/doc/ExampleOutput.md'>JVM internal metrics</a> (e.g. memory information) of running java processes.<br>
 <br>
-Jvmtop does also include a <a href='https://github.com/patric-r/jvmtop/blob/master/doc/ConsoleProfiler.md'>CPU console profiler</a>.<br>
+Jvmtop does also include console <a href='https://github.com/patric-r/jvmtop/blob/master/doc/ConsoleProfiler.md'>CPU</a> and <a href='https://github.com/tckb/jvmtop/blob/master/doc/HeapProfiler.md'>Memory</a> profiler. <br>
 <br>
 It's tested with different releases of Oracle JDK, IBM JDK and OpenJDK on Linux, Solaris, FreeBSD and Windows hosts.<br>
 Jvmtop requires a JDK - a JRE will not suffice.<br>
