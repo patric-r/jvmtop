@@ -266,7 +266,6 @@ public class VMInfo {
             heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
             nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
             threadMXBean = proxyClient.getThreadMXBean();
-
             //TODO: fetch jvm-constant data only once
             systemProperties_ = runtimeMXBean.getSystemProperties();
             vmVersion_ = extractShortVer();

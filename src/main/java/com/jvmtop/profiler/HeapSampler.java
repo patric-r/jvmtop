@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  *
  * @author tckb
  */
-public class MemorySampler {
+public class HeapSampler {
     public static final Map<Long, String> binaryPrefixes_IEC;
     public static final long _1KB = 1024L;
     public static final Map<Character, String> jniTypeSignatureMap;
@@ -51,7 +51,7 @@ public class MemorySampler {
             return new String[]{String.valueOf(bytes), " B"};
         }
         String[] hForm = new String[]{};
-        for (Entry<Long, String> entry : MemorySampler.binaryPrefixes_IEC.entrySet()) {
+        for (Entry<Long, String> entry : HeapSampler.binaryPrefixes_IEC.entrySet()) {
             Double amount = bytes * 1.d / entry.getKey();
             if (amount.intValue() > 0) {
                 hForm = new String[]{
@@ -78,7 +78,7 @@ public class MemorySampler {
         return nativeClassType;
     }
 
-    public MemorySampler(final HotSpotVirtualMachine hVm) {this.hVm = hVm;}
+    public HeapSampler(final HotSpotVirtualMachine hVm) {this.hVm = hVm;}
 
     public SortedSet<HeapHistogram> getHistogram(boolean updateDeltas) throws IOException {
         SortedSet<HeapHistogram> updatedHist = new TreeSet<HeapHistogram>();
@@ -148,10 +148,10 @@ public class MemorySampler {
         public String deltaSign;
 
         private HeapHistogram(final String className, final int count, final int bytes) {
-            this.className = MemorySampler.fromNativeType(className);
+            this.className = HeapSampler.fromNativeType(className);
             this.count = count;
             this.bytes = bytes;
-            final String[] strings = MemorySampler.toHumanForm(bytes);
+            final String[] strings = HeapSampler.toHumanForm(bytes);
             this.memory = strings[0];
             this.memorySuffix = strings[1];
             this.delta = 0;

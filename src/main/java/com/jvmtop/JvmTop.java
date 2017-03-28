@@ -52,10 +52,11 @@ import java.util.logging.Logger;
  * TODO: refactor to split these tasks
  *
  * @author paru
+ * @author tckb
  */
 public class JvmTop {
 
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "1.0";
     private Double delay_ = 1.0;
     private Boolean supportsSystemAverage_;
     private java.lang.management.OperatingSystemMXBean localOSBean_;
@@ -256,6 +257,7 @@ public class JvmTop {
                 }
                 printTopBar();
                 view.printView();
+                System.out.println("\n");
                 System.out.flush();
                 iterations++;
                 if (iterations >= maxIterations_ && maxIterations_ > 0) {
@@ -265,11 +267,9 @@ public class JvmTop {
             }
         } catch (NoClassDefFoundError e) {
             e.printStackTrace(System.err);
-
             System.err.println("");
             System.err.println("ERROR: Some JDK classes cannot be found.");
-            System.err
-                    .println("       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
+            System.err.println("       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
             System.err.println("");
         }
     }
@@ -277,6 +277,7 @@ public class JvmTop {
     /**
      *
      */
+
     private void clearTerminal() {
         if (System.getProperty("os.name").contains("Windows")) {
             //hack

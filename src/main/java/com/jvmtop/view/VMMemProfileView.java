@@ -3,8 +3,8 @@ package com.jvmtop.view;
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
-import com.jvmtop.profiler.MemorySampler;
-import com.jvmtop.profiler.MemorySampler.HeapHistogram;
+import com.jvmtop.profiler.HeapSampler;
+import com.jvmtop.profiler.HeapSampler.HeapHistogram;
 import com.sun.tools.attach.VirtualMachine;
 import sun.tools.attach.HotSpotVirtualMachine;
 
@@ -17,20 +17,26 @@ import java.io.IOException;
  * @author tckb
  */
 public class VMMemProfileView extends AbstractConsoleView implements Closeable {
-    private final MemorySampler memorySampler_;
+    private final HeapSampler memorySampler_;
     private final VMInfo vmInfo_;
     private final HotSpotVirtualMachine hVm;
     private final boolean deltaEnabled;
+    private final int topObjects;
 
-
-    public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled) throws Exception {
+    public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled, int topObjects) throws Exception {
         super(width);
         hVm = (HotSpotVirtualMachine) VirtualMachine.attach(String.valueOf(vmid));
         LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
                 .getLocalVirtualMachine(vmid);
         vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
-        memorySampler_ = new MemorySampler(hVm);
+        memorySampler_ = new HeapSampler(hVm);
         this.deltaEnabled = deltaEnabled;
+        this.topObjects = topObjects;
+    }
+
+
+    public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled) throws Exception {
+        this(vmid, width, deltaEnabled, 10);
     }
 
     @Override
@@ -47,12 +53,14 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
             return;
         }
 
+        vmInfo_.update();
+
         int w = width - 40;
         System.out.printf("Memory Profiling PID %d: %40s %n%n", vmInfo_.getId(),
                 leftStr(vmInfo_.getDisplayName(), w));
-        System.out.printf("HEAP:%5s /%5s NONHEAP:%5s /%5s%n",
-                toMB(vmInfo_.getHeapUsed()), toMB(vmInfo_.getHeapMax()),
-                toMB(vmInfo_.getNonHeapUsed()), toMB(vmInfo_.getNonHeapMax()));
+        System.out.printf("HEAP:%5s /%5s GC-Time: %-7s #GC-Counts: %-8d \n",
+                toMB(vmInfo_.getHeapUsed()), toMB(vmInfo_.getHeapMax()), toHHMM(vmInfo_.getGcTime()), vmInfo_.getGcCount());
+
 
         System.out.println();
 
@@ -68,6 +76,8 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
                 System.out.printf("%8s %3s / %5.2f%% %10s %12s %s\n", stats.memory, stats.memorySuffix, (stats.bytes * 1.d * 100 / vmInfo_.getHeapUsed()), "", stats.count, shortFQN(stats.className, w));
             }
         }
+        System.out.println("");
+        System.out.println("Note: Only top " + topObjects + " objects (according to their memory consumptions) are shown");
 
     }
 
