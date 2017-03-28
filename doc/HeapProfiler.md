@@ -1,13 +1,21 @@
 # Introduction #
 
-Starting with version 1.0, jvmtop includes an experimental, (Heap) memory sampling. You can invoke the profiling view by specifying the `--profile-mem` argument, followed by the PID:
+Starting with version 1.0, jvmtop includes an experimental, (Heap) memory sampling. You can invoke the profiling view by specifying the `--profile-mem` argument, followed by the PID.
+
 
 ```
 jvmtop.sh --profile-mem <PID>
 ```
+[![JvmTop](https://asciinema.org/a/9uu9mm4n3j633m6mgm892jpuy.png)](https://asciinema.org/a/9uu9mm4n3j633m6mgm892jpuy)
 
-# Example output #
-<script type="text/javascript" src="https://asciinema.org/a/14.js" id="9uu9mm4n3j633m6mgm892jpuy" async></script>
+
+inorder to view the deltas between the updates, you can use `--enable-deltas` flag in addition. 
+
+```
+jvmtop.sh --profile-mem <PID> --enable-deltas
+```
+[![JvmTop](https://asciinema.org/a/e53qml4g2gccsk5wm1whyi8ow.png)](https://asciinema.org/a/e53qml4g2gccsk5wm1whyi8ow)
+
 
 
 # Important notes #
