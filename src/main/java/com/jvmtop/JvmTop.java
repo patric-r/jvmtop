@@ -55,7 +55,7 @@ import java.util.logging.Logger;
  */
 public class JvmTop {
 
-    public static final String VERSION = "0.8.0 alpha";
+    public static final String VERSION = "0.1.0";
     private Double delay_ = 1.0;
     private Boolean supportsSystemAverage_;
     private java.lang.management.OperatingSystemMXBean localOSBean_;
@@ -80,7 +80,11 @@ public class JvmTop {
                 .withRequiredArg()
                 .ofType(Double.class);
         parser.accepts("profile", "start CPU profiling at the specified jvm");
-        parser.accepts("profile-mem", "start memory profiling at the specified jvm");
+        parser.accepts("enable-deltas", "shows deltas between the updates (currently only applicable with --profile-mem)");
+
+        parser.accepts("profile-mem", "start memory profiling at the specified jvm")
+                .requiredIf("enable-deltas");
+
         parser.accepts("sysinfo", "outputs diagnostic information");
         parser.accepts("verbose", "verbose mode");
         parser.accepts("threadlimit", "sets the number of displayed threads in detail mode")
@@ -123,6 +127,7 @@ public class JvmTop {
         double delay = 1.0;
         boolean profileMode = a.has("profile");
         boolean profileMemMode = a.has("profile-mem");
+        boolean deltasEnabled = a.has("enable-deltas");
 
         Integer iterations = a.has("once") ? 1 : -1;
         Integer threadlimit = null;
@@ -184,7 +189,7 @@ public class JvmTop {
                     jvmTop.run(new VMProfileView(pid, width));
                 }
                 if (profileMemMode) {
-                    jvmTop.run(new VMMemProfileView(pid, width));
+                    jvmTop.run(new VMMemProfileView(pid, width, deltasEnabled));
                 } else {
                     VMDetailView vmDetailView = new VMDetailView(pid, width);
                     vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);

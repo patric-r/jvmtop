@@ -20,15 +20,17 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
     private final MemorySampler memorySampler_;
     private final VMInfo vmInfo_;
     private final HotSpotVirtualMachine hVm;
+    private final boolean deltaEnabled;
 
 
-    public VMMemProfileView(int vmid, Integer width) throws Exception {
+    public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled) throws Exception {
         super(width);
         hVm = (HotSpotVirtualMachine) VirtualMachine.attach(String.valueOf(vmid));
         LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
                 .getLocalVirtualMachine(vmid);
         vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
         memorySampler_ = new MemorySampler(hVm);
+        this.deltaEnabled = deltaEnabled;
     }
 
     @Override
@@ -59,8 +61,12 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
         // for printing out the method name
         w = width - (8 + 4 + 5 + 3 + 12 + 3);
 
-        for (HeapHistogram stats : memorySampler_.getHistogram(10)) {
-            System.out.printf("%8s %3s / %5.2f%% ( %12s) %s\n", stats.memory, stats.memorySuffix, (stats.bytes * 1.d * 100 / vmInfo_.getHeapUsed()), stats.count, shortFQN(stats.className, w));
+        for (HeapHistogram stats : memorySampler_.getHistogram(10, deltaEnabled)) {
+            if (stats.delta > 0) {
+                System.out.printf("%8s %3s / %5.2f%% %3s %5.3f%% %12s %s\n", stats.memory, stats.memorySuffix, (stats.bytes * 1.d * 100 / vmInfo_.getHeapUsed()), stats.deltaSign, stats.delta, stats.count, shortFQN(stats.className, w));
+            } else {
+                System.out.printf("%8s %3s / %5.2f%% %10s %12s %s\n", stats.memory, stats.memorySuffix, (stats.bytes * 1.d * 100 / vmInfo_.getHeapUsed()), "", stats.count, shortFQN(stats.className, w));
+            }
         }
 
     }
@@ -78,6 +84,7 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
     public void close() throws IOException {
         hVm.detach();
     }
+
 }
 
 

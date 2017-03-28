@@ -23,6 +23,7 @@ public class MemorySampler {
             "\\s+(\\d+):{1}\\s+(\\d+)\\s+(\\d+)\\s+(.+)"
     );
     private final HotSpotVirtualMachine hVm;
+    private Set<HeapHistogram> currentHist;
 
 
     static {
@@ -79,33 +80,60 @@ public class MemorySampler {
 
     public MemorySampler(final HotSpotVirtualMachine hVm) {this.hVm = hVm;}
 
-    public SortedSet<HeapHistogram> getHistogram() throws IOException {
-        SortedSet<HeapHistogram> memoryHeaps = new TreeSet<HeapHistogram>();
+    public SortedSet<HeapHistogram> getHistogram(boolean updateDeltas) throws IOException {
+        SortedSet<HeapHistogram> updatedHist = new TreeSet<HeapHistogram>();
         final Matcher matcher = HIST_PATTERN.matcher("");
         String heapLine;
         final BufferedReader data = new BufferedReader(new InputStreamReader(hVm.heapHisto()));
         while ((heapLine = data.readLine()) != null) {
             matcher.reset(heapLine);
             if (matcher.matches()) {
-                memoryHeaps.add(
+                updatedHist.add(
                         new HeapHistogram(matcher.group(4),
                                 matcher.group(2), matcher.group(3))
                 );
             }
         }
-        return memoryHeaps;
+        if (updateDeltas && currentHist != null) {
+            updateDeltas(updatedHist, currentHist);
+        }
+
+        currentHist = updatedHist;
+        return updatedHist;
     }
 
-    public Set<HeapHistogram> getHistogram(final int limit) throws IOException {
+    public Set<HeapHistogram> getHistogram(final int limit, boolean updateDeltas) throws IOException {
         final Set<HeapHistogram> topHeapHist = new TreeSet<HeapHistogram>();
         int cnt = 0;
-        for (HeapHistogram histogram : getHistogram()) {
+        for (HeapHistogram histogram : getHistogram(updateDeltas)) {
             topHeapHist.add(histogram);
             if (++cnt > limit) {
                 break;
             }
         }
         return topHeapHist;
+    }
+
+    // this is computationally expensive!
+    protected void updateDeltas(Set<HeapHistogram> updatedSamples, Set<HeapHistogram> original) {
+        for (HeapHistogram updatedSample : updatedSamples) {
+
+            innerloop:
+            for (HeapHistogram originalSample : original) {
+                if (originalSample.className.equals(updatedSample.className)) {
+                    double changePer = ((updatedSample.bytes - originalSample.bytes) * 100.d / originalSample.bytes);
+                    String sign = changePer > 0 ? "▲" : "▼";
+                    changePer = Math.abs(changePer);
+                    if (changePer > 0) {
+                        updatedSample.delta = changePer;
+                        updatedSample.deltaSign = sign;
+//                        updatedSample.delta = String.format("%s%-5.3f%%", sign, changePer);
+                    }
+                    break innerloop;
+                }
+            }
+
+        }
     }
 
 
@@ -116,6 +144,8 @@ public class MemorySampler {
         public final String className;
         public final String memory;
         public final String memorySuffix;
+        public double delta;
+        public String deltaSign;
 
         private HeapHistogram(final String className, final int count, final int bytes) {
             this.className = MemorySampler.fromNativeType(className);
@@ -124,12 +154,26 @@ public class MemorySampler {
             final String[] strings = MemorySampler.toHumanForm(bytes);
             this.memory = strings[0];
             this.memorySuffix = strings[1];
+            this.delta = 0;
+            this.deltaSign = "";
         }
 
         private HeapHistogram(final String className, final String count, final String bytes) {
             this(className, Integer.valueOf(count), Integer.valueOf(bytes));
         }
 
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) { return true; }
+            if (o == null || getClass() != o.getClass()) { return false; }
+            final HeapHistogram that = (HeapHistogram) o;
+            return className.equals(that.className);
+        }
+
+        @Override
+        public int hashCode() {
+            return className.hashCode();
+        }
 
         @Override
         public int compareTo(final HeapHistogram o) {
@@ -147,6 +191,7 @@ public class MemorySampler {
         public String toString() {
             return className + "(" + count + "/" + memory + ")";
         }
+
     }
 
 
