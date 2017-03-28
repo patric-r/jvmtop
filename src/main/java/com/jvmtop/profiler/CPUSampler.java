@@ -61,10 +61,7 @@ public class CPUSampler {
 
     private VMInfo vmInfo_;
 
-    /**
-     * @param threadMxBean
-     * @throws Exception
-     */
+
     public CPUSampler(VMInfo vmInfo) throws Exception {
         super();
         threadMxBean_ = vmInfo.getThreadMXBean();

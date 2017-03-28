@@ -22,6 +22,7 @@ package com.jvmtop;
 
 import com.jvmtop.view.ConsoleView;
 import com.jvmtop.view.VMDetailView;
+import com.jvmtop.view.VMMemProfileView;
 import com.jvmtop.view.VMOverviewView;
 import com.jvmtop.view.VMProfileView;
 import joptsimple.OptionParser;
@@ -69,39 +70,32 @@ public class JvmTop {
 
     private static OptionParser createOptionParser() {
         OptionParser parser = new OptionParser();
-        parser.acceptsAll(Arrays.asList("help", "?", "h"),
-                "shows this help").forHelp();
-        parser
-                .accepts("once",
-                        "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
-        parser
-                .acceptsAll(Arrays.asList("n", "iteration"),
-                        "jvmtop will exit after n output iterations").withRequiredArg()
+        parser.acceptsAll(Arrays.asList("help", "?", "h"), "shows this help")
+                .forHelp();
+        parser.accepts("once", "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
+        parser.acceptsAll(Arrays.asList("n", "iteration"), "jvmtop will exit after n output iterations")
+                .withRequiredArg()
                 .ofType(Integer.class);
-        parser
-                .acceptsAll(Arrays.asList("d", "delay"),
-                        "delay between each output iteration").withRequiredArg()
+        parser.acceptsAll(Arrays.asList("d", "delay"), "delay between each output iteration")
+                .withRequiredArg()
                 .ofType(Double.class);
         parser.accepts("profile", "start CPU profiling at the specified jvm");
+        parser.accepts("profile-mem", "start memory profiling at the specified jvm");
         parser.accepts("sysinfo", "outputs diagnostic information");
         parser.accepts("verbose", "verbose mode");
-        parser.accepts("threadlimit",
-                "sets the number of displayed threads in detail mode")
+        parser.accepts("threadlimit", "sets the number of displayed threads in detail mode")
                 .withRequiredArg().ofType(Integer.class);
-        parser
-                .accepts("disable-threadlimit", "displays all threads in detail mode");
+        parser.accepts("disable-threadlimit", "displays all threads in detail mode");
 
-        parser
-                .acceptsAll(Arrays.asList("p", "pid"),
-                        "PID to connect to").withRequiredArg().ofType(Integer.class);
+        parser.acceptsAll(Arrays.asList("p", "pid"), "PID to connect to")
+                .withRequiredArg()
+                .ofType(Integer.class);
 
-        parser
-                .acceptsAll(Arrays.asList("w", "width"),
-                        "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
+        parser.acceptsAll(Arrays.asList("w", "width"), "Width in columns for the console display")
+                .withRequiredArg()
+                .ofType(Integer.class);
 
-        parser
-                .accepts("threadnamewidth",
-                        "sets displayed thread name length in detail mode (defaults to 30)")
+        parser.accepts("threadnamewidth", "sets displayed thread name length in detail mode (defaults to 30)")
                 .withRequiredArg().ofType(Integer.class);
 
         return parser;
@@ -128,6 +122,8 @@ public class JvmTop {
         Integer width = null;
         double delay = 1.0;
         boolean profileMode = a.has("profile");
+        boolean profileMemMode = a.has("profile-mem");
+
         Integer iterations = a.has("once") ? 1 : -1;
         Integer threadlimit = null;
         boolean threadLimitEnabled = true;
@@ -186,6 +182,9 @@ public class JvmTop {
             } else {
                 if (profileMode) {
                     jvmTop.run(new VMProfileView(pid, width));
+                }
+                if (profileMemMode) {
+                    jvmTop.run(new VMMemProfileView(pid, width));
                 } else {
                     VMDetailView vmDetailView = new VMDetailView(pid, width);
                     vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);

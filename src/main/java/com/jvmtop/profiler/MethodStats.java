@@ -84,11 +84,10 @@ public class MethodStats implements Comparable<MethodStats> {
         return true;
     }
 
-
-    @Override
     /**
      * Compares a MethodStats object by its hits
      */
+    @Override
     public int compareTo(MethodStats o) {
         return Long.valueOf(o.hits_.get()).compareTo(hits_.get());
     }
