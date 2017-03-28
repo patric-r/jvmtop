@@ -12,7 +12,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * Created on 27/03/17.
+ * a Heap profiler view that displays the top objects in the heap
  *
  * @author tckb
  */
@@ -23,6 +23,19 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
     private final boolean deltaEnabled;
     private final int topObjects;
 
+    /**
+     * initializes this view
+     *
+     * @param vmid
+     *         the PID of the vm
+     * @param width
+     *         the width to be used for printing
+     * @param deltaEnabled
+     *         enable this to display the deltas between the updates
+     * @param topObjects
+     *         the #objects to be showed (in decreasing order of usage)
+     * @throws Exception
+     */
     public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled, int topObjects) throws Exception {
         super(width);
         hVm = (HotSpotVirtualMachine) VirtualMachine.attach(String.valueOf(vmid));
@@ -35,6 +48,17 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
     }
 
 
+    /**
+     * initializes this view
+     *
+     * @param vmid
+     *         the PID of the vm
+     * @param width
+     *         the width to be used for printing
+     * @param deltaEnabled
+     *         enable this to display the deltas between the updates
+     * @throws Exception
+     */
     public VMMemProfileView(int vmid, Integer width, boolean deltaEnabled) throws Exception {
         this(vmid, width, deltaEnabled, 10);
     }
@@ -69,7 +93,7 @@ public class VMMemProfileView extends AbstractConsoleView implements Closeable {
         // for printing out the method name
         w = width - (8 + 4 + 5 + 3 + 12 + 3);
 
-        for (HeapHistogram stats : memorySampler_.getHistogram(10, deltaEnabled)) {
+        for (HeapHistogram stats : memorySampler_.getHistogram(topObjects, deltaEnabled)) {
             if (stats.delta > 0) {
                 System.out.printf("%8s %3s / %5.2f%% %3s %5.3f%% %12s %s\n", stats.memory, stats.memorySuffix, (stats.bytes * 1.d * 100 / vmInfo_.getHeapUsed()), stats.deltaSign, stats.delta, stats.count, shortFQN(stats.className, w));
             } else {

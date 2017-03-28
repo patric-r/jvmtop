@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created on 27/03/17.
+ * A sampler for the heap histograms
  *
  * @author tckb
  */
@@ -46,6 +46,18 @@ public class HeapSampler {
         jniTypeSignatureMap.put('D', "double");
     }
 
+    /**
+     * Returns the human-readable form of the byte. <p/>
+     * for eg, 1024 bytes would result in 1KiB. Note that, the conversion is done in <b>IEC system</b> </p>
+     * that means, 102400 bytes would give 10KiB rather than, 10KB. the converted format is in <b>XX.YYY [suffix]</b>
+     * <p/>
+     * Check https://en.wikipedia.org/wiki/Binary_prefix for more informaion
+     * <p>
+     *
+     * @param bytes
+     *         input bytes
+     * @return an array containing human readable form of memory and suffix respectively
+     */
     public static String[] toHumanForm(long bytes) {
         if (bytes < 1024) {
             return new String[]{String.valueOf(bytes), " B"};
@@ -64,6 +76,36 @@ public class HeapSampler {
         return hForm;
     }
 
+    /**
+     * Returns "String" version of human-readable form of the byte. <p/>
+     * for eg, 1024 bytes would result in 1KiB. Note that, the conversion is done in <b>IEC system</b> </p>
+     * that means, 102400 bytes would give 10KiB rather than, 10KB. the converted format is in <b>XX.YYY [suffix]</b>
+     * <p/>
+     * Check https://en.wikipedia.org/wiki/Binary_prefix for more informaion
+     * <p>
+     *
+     * @param bytes
+     *         input bytes
+     * @return the human readable form of the bytes in IEC system
+     */
+    public static String toHumanFormString(long bytes) {
+        StringBuilder data = new StringBuilder();
+        for (String m : toHumanForm(bytes)) {
+            data.append(m).append(" ");
+        }
+        data.deleteCharAt(data.length() - 1);
+        return data.toString();
+    }
+
+
+    /**
+     * Returns the Java Type of the corresponding JNI type
+     * <p/>
+     * Check https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/types.html
+     *
+     * @param nativeClassType
+     * @return
+     */
     public static String fromNativeType(String nativeClassType) {
         if (jniTypeSignatureMap.containsKey(nativeClassType.charAt(0))) {
             final String type = jniTypeSignatureMap.get(nativeClassType.charAt(0));
@@ -78,9 +120,22 @@ public class HeapSampler {
         return nativeClassType;
     }
 
+    /**
+     * initializes the heap sampler
+     *
+     * @param hVm
+     */
     public HeapSampler(final HotSpotVirtualMachine hVm) {this.hVm = hVm;}
 
-    public SortedSet<HeapHistogram> getHistogram(boolean updateDeltas) throws IOException {
+    /**
+     * Returns all the heap objects present in the VM sorted by their consumption
+     *
+     * @param updateDeltas
+     *         include the delta information
+     * @return the set of HeapHistograms
+     * @throws IOException
+     */
+    public Set<HeapHistogram> getHistogram(boolean updateDeltas) throws IOException {
         SortedSet<HeapHistogram> updatedHist = new TreeSet<HeapHistogram>();
         final Matcher matcher = HIST_PATTERN.matcher("");
         String heapLine;
@@ -102,6 +157,16 @@ public class HeapSampler {
         return updatedHist;
     }
 
+    /**
+     * Returns top heap objects present in the VM sorted by their consumption
+     *
+     * @param limit
+     *         the top limit
+     * @param updateDeltas
+     *         include the delta information
+     * @return the set of HeapHistograms
+     * @throws IOException
+     */
     public Set<HeapHistogram> getHistogram(final int limit, boolean updateDeltas) throws IOException {
         final Set<HeapHistogram> topHeapHist = new TreeSet<HeapHistogram>();
         int cnt = 0;
@@ -136,7 +201,9 @@ public class HeapSampler {
         }
     }
 
-
+    /**
+     * the heap heap histogram of the java object
+     */
     public class HeapHistogram implements Comparable<HeapHistogram> {
 
         public final int count;
