@@ -1,8 +1,11 @@
 package com.jvmtop.profiler;
 
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
 import sun.tools.attach.HotSpotVirtualMachine;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -49,9 +52,9 @@ public class HeapSampler {
     /**
      * Returns the human-readable form of the byte. <p/>
      * for eg, 1024 bytes would result in 1KiB. Note that, the conversion is done in <b>IEC system</b> </p>
-     * that means, 102400 bytes would give 10KiB rather than, 10KB. the converted format is in <b>XX.YYY [suffix]</b>
+     * that means, 102400 bytes would give 100KiB rather than, 102.4KB. the converted format is in <b>XX.YYY [suffix]</b>
      * <p/>
-     * Check https://en.wikipedia.org/wiki/Binary_prefix for more informaion
+     * Check https://en.wikipedia.org/wiki/Binary_prefix for more information
      * <p>
      *
      * @param bytes
@@ -79,9 +82,9 @@ public class HeapSampler {
     /**
      * Returns "String" version of human-readable form of the byte. <p/>
      * for eg, 1024 bytes would result in 1KiB. Note that, the conversion is done in <b>IEC system</b> </p>
-     * that means, 102400 bytes would give 10KiB rather than, 10KB. the converted format is in <b>XX.YYY [suffix]</b>
+     * that means, 102400 bytes would give 100KiB rather than, 102.4KB. the converted format is in <b>XX.YYY [suffix]</b>
      * <p/>
-     * Check https://en.wikipedia.org/wiki/Binary_prefix for more informaion
+     * Check https://en.wikipedia.org/wiki/Binary_prefix for more information
      * <p>
      *
      * @param bytes
@@ -126,6 +129,13 @@ public class HeapSampler {
      * @param hVm
      */
     public HeapSampler(final HotSpotVirtualMachine hVm) {this.hVm = hVm;}
+
+    /**
+     * initializes the heap sampler
+     *
+     * @param vmid
+     */
+    public HeapSampler(int vmid) throws IOException, AttachNotSupportedException {this.hVm = (HotSpotVirtualMachine) VirtualMachine.attach(String.valueOf(vmid));}
 
     /**
      * Returns all the heap objects present in the VM sorted by their consumption
@@ -200,6 +210,45 @@ public class HeapSampler {
 
         }
     }
+
+
+    /**
+     * returns the current thread dump
+     *
+     * @return thread dump
+     */
+    public String threadDump() throws IOException {
+        StringBuilder data = new StringBuilder();
+        final BufferedReader br = new BufferedReader(new InputStreamReader(hVm.remoteDataDump()));
+        String line;
+        while ((line = br.readLine()) != null) {
+            data.append(line).append("\n");
+        }
+        return data.toString();
+    }
+
+    /**
+     * generates the heap dump
+     */
+    public boolean dumpHeap(File file) throws IOException {
+        if (file.exists()) {
+            throw new IOException("file already exist.");
+        }
+
+        StringBuilder data = new StringBuilder();
+        final BufferedReader br = new BufferedReader(new InputStreamReader(hVm.dumpHeap(file.getAbsolutePath() + ".hprof")));
+        String line;
+        while ((line = br.readLine()) != null) {
+            data.append(line).append("\n");
+        }
+
+        String status = data.toString();
+        if (!status.trim().equalsIgnoreCase("heap dump file created")) {
+            throw new IOException(status);
+        }
+        return true;
+    }
+
 
     /**
      * the heap heap histogram of the java object

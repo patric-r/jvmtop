@@ -20,18 +20,17 @@
  */
 package com.jvmtop;
 
+import com.jvmtop.profiler.HeapSampler;
 import com.jvmtop.view.ConsoleView;
 import com.jvmtop.view.VMDetailView;
 import com.jvmtop.view.VMMemProfileView;
 import com.jvmtop.view.VMOverviewView;
 import com.jvmtop.view.VMProfileView;
+import com.sun.tools.attach.AttachNotSupportedException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import java.io.BufferedOutputStream;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Date;
@@ -103,6 +102,11 @@ public class JvmTop {
         parser.accepts("threadnamewidth", "sets displayed thread name length in detail mode (defaults to 30)")
                 .withRequiredArg().ofType(Integer.class);
 
+        parser.accepts("thread-dump", "dumps the status of current running threads");
+        parser.accepts("heap-dump", "generates and dumps the heap to the specified file")
+                .withRequiredArg()
+                .ofType(String.class);
+
         return parser;
     }
 
@@ -129,7 +133,6 @@ public class JvmTop {
         boolean profileMode = a.has("profile");
         boolean profileMemMode = a.has("profile-mem");
         boolean deltasEnabled = a.has("enable-deltas");
-
         Integer iterations = a.has("once") ? 1 : -1;
         Integer threadlimit = null;
         boolean threadLimitEnabled = true;
@@ -177,6 +180,11 @@ public class JvmTop {
             threadNameWidth = (Integer) a.valueOf("threadnamewidth");
         }
 
+        // non-view arguments
+        if (a.has("thread-dump") || a.has("heap-dump")) {
+            handleNonViewArgs(a, pid);
+        }
+
         if (sysInfoOption) {
             outputSystemProps();
         } else {
@@ -205,6 +213,45 @@ public class JvmTop {
                 }
 
             }
+        }
+    }
+
+    private static void handleNonViewArgs(final OptionSet options, Integer pid) {
+        if (pid == null) {
+            System.err.println("");
+            System.err.println("ERROR: pid required");
+            System.err.println("");
+            System.exit(100);
+        }
+
+
+        try {
+            HeapSampler sampler = new HeapSampler(pid);
+
+            if (options.has("thread-dump")) {
+                System.out.println(sampler.threadDump());
+                System.exit(0);
+            }
+
+            if (options.has("heap-dump")) {
+                String file = (String) options.valueOf("heap-dump");
+                if (sampler.dumpHeap(new File(file))) {
+                    System.out.println("Heap dump created successfully at " + file);
+                    System.exit(0);
+                } else {
+                    System.err.println("Heap dump creation failed! ");
+                    System.exit(100);
+                }
+            }
+
+        } catch (IOException e) {
+            System.err.println("");
+            System.err.println("ERROR:" + e.getMessage());
+            System.err.println("");
+        } catch (AttachNotSupportedException e) {
+            System.err.println("");
+            System.err.println("ERROR: Unable to attach pid, is the vm still running? " + e.getMessage());
+            System.err.println("");
         }
     }
 
