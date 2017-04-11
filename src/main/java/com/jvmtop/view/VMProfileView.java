@@ -41,13 +41,13 @@ public class VMProfileView extends AbstractConsoleView
 
   private VMInfo     vmInfo_;
 
-  public VMProfileView(int vmid, Integer width) throws Exception
+  public VMProfileView(int vmid, Integer width, String[] filters) throws Exception
   {
     super(width);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
-    cpuSampler_ = new CPUSampler(vmInfo_);
+    cpuSampler_ = new CPUSampler(vmInfo_, filters);
   }
 
   @Override

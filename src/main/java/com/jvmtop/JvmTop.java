@@ -28,6 +28,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.SplittableRandom;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -106,6 +107,9 @@ public class JvmTop
     parser
         .acceptsAll(Arrays.asList(new String[] { "w", "width" }),
             "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
+    parser
+    .acceptsAll(Arrays.asList(new String[] { "f", "filter" }),
+        "packages to be filtered from profiling").withRequiredArg().ofType(String.class);
 
     parser
         .accepts("threadnamewidth",
@@ -145,6 +149,8 @@ public class JvmTop
     Integer iterations = a.has("once") ? 1 : -1;
 
     Integer threadlimit = null;
+    
+    String[] filters = new String[]{};
 
     boolean threadLimitEnabled = true;
 
@@ -178,6 +184,16 @@ public class JvmTop
     if (a.hasArgument("width"))
     {
       width = (Integer) a.valueOf("width");
+    }
+    
+    if (a.hasArgument("filter"))
+    {
+      String filter  = (String) a.valueOf("filter");
+      filters = filter.split(",");
+      for (int i = 0; i < filters.length; i++)
+      {
+        System.out.println("filter: "+filters[i]);
+      }
     }
 
     if (a.hasArgument("threadlimit"))
@@ -219,7 +235,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, width));
+          jvmTop.run(new VMProfileView(pid, width, filters));
         }
         else
         {
