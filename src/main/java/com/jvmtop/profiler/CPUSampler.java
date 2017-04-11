@@ -31,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import joptsimple.internal.Strings;
+
 import com.jvmtop.monitor.VMInfo;
 
 /**
@@ -55,13 +57,7 @@ public class CPUSampler
 
 
   //TODO: these exception list should be expanded to the most common 3rd-party library packages
-  private List<String>                       filter        = Arrays
-                                                               .asList(new String[] {
-      "org.eclipse.", "org.apache.", "java.", "sun.", "com.sun.", "javax.",
-      "oracle.", "com.trilead.", "org.junit.", "org.mockito.",
-      "org.hibernate.", "com.ibm.", "com.caucho."
-
-                                                                     });
+  private List<String>                       filter        = new ArrayList<String>();
 
   private ConcurrentMap<Long, Long>          threadCPUTime = new ConcurrentHashMap<Long, Long>();
 
@@ -71,15 +67,29 @@ public class CPUSampler
   private VMInfo                             vmInfo_;
 
   /**
+   * @param filters 
    * @param threadMxBean
    * @throws Exception
    */
-  public CPUSampler(VMInfo vmInfo) throws Exception
+  public CPUSampler(VMInfo vmInfo, String[] filters) throws Exception
   {
     super();
     threadMxBean_ = vmInfo.getThreadMXBean();
     beginCPUTime_ = vmInfo.getProxyClient().getProcessCpuTime();
     vmInfo_ = vmInfo;
+    String[] defaultFilters = new String[] {
+        "org.eclipse.", "org.apache.", "java.", "sun.", "com.sun.", "javax.",
+        "oracle.", "com.trilead.", "org.junit.", "org.mockito.",
+        "org.hibernate.", "com.ibm.", "com.caucho.", "org.mariadb."};
+    for (int i = 0; i < defaultFilters.length; i++)
+    {
+      filter.add(defaultFilters[i]);
+    }
+    for (int i = 0; i < filters.length; i++)
+    {
+      if(!Strings.isNullOrEmpty(filters[i]))
+        filter.add(filters[i]);
+    }
   }
 
   public List<MethodStats> getTop(int limit)
