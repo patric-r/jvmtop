@@ -28,7 +28,7 @@
     <properties>
         <!-- change it to point to your tools.jar from your JDK -->
         <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-        <jdk.version>1.6</jdk.version>
+        <jdk.version>1.8</jdk.version>
     </properties>
 
     <build>
