@@ -123,8 +123,9 @@ public class JvmTop
             "Profiler maximum function depth in output")
             .withRequiredArg().ofType(Integer.class);
     parser.accepts("profileCanSkip",
-            "Profiler ability to skip intermediate functions with same cpu usage as their parent")
-            .withRequiredArg().ofType(Boolean.class);
+            "Profiler ability to skip intermediate functions with same cpu usage as their parent");
+    parser.accepts("profilePrintTotal",
+            "Profiler printing percent of total thread cpu");
 
     return parser;
   }
@@ -167,7 +168,8 @@ public class JvmTop
     Double minTotal = null;
     Double minCost = null;
     Integer maxDepth = null;
-    Boolean canSkip = null;
+    boolean canSkip = false;
+    boolean printTotal = false;
 
     if (a.hasArgument("delay"))
     {
@@ -234,7 +236,11 @@ public class JvmTop
     }
 
     if (a.hasArgument("profileCanSkip")) {
-      canSkip = (Boolean) a.valueOf("profileCanSkip");
+      canSkip = true;
+    }
+
+    if (a.hasArgument("profilePrintTotal")) {
+      printTotal = true;
     }
 
     if (sysInfoOption)
@@ -254,7 +260,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth, canSkip)));
+          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth, canSkip, printTotal)));
         }
         else
         {

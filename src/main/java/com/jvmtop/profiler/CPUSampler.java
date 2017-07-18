@@ -53,7 +53,6 @@ public class CPUSampler {
             0);
 
     private ConcurrentMap<Long, Long> threadCPUPreviousMark = new ConcurrentHashMap<Long, Long>();
-    private ConcurrentMap<Long, Long> threadCPUCounted = new ConcurrentHashMap<Long, Long>();
 
     private AtomicLong updateCount_ = new AtomicLong(
             0);
@@ -75,8 +74,7 @@ public class CPUSampler {
         List<CalltreeNode> statList = new ArrayList<CalltreeNode>();
 
         for (Map.Entry<Long, CalltreeNode> entry : data_.entrySet()) {
-            Long cpu = threadCPUCounted.get(entry.getKey());
-            if (cpu == null) continue;
+            Long cpu = entry.getValue().getTotalTime();
             if ((cpu * 100L / (totalThreadCPUTime_.get() + 1)) > percentLimit) {
                 statList.add(entry.getValue());
             }
@@ -102,12 +100,7 @@ public class CPUSampler {
                     data_.putIfAbsent(ti.getThreadId(), new CalltreeNode(ti.getThreadName()));
                     CalltreeNode root = data_.get(ti.getThreadId());
                     samplesAcquired = CalltreeNode.stack(ti, deltaCpuTime, root);
-                    if (samplesAcquired) {
-                        totalThreadCPUTime_.addAndGet(deltaCpuTime);
-                        threadCPUCounted.putIfAbsent(ti.getThreadId(), 0L);
-                        Long cpu = threadCPUCounted.get(ti.getThreadId());
-                        threadCPUCounted.put(ti.getThreadId(), cpu + deltaCpuTime);
-                    }
+                    if (samplesAcquired) totalThreadCPUTime_.addAndGet(deltaCpuTime);
                 }
             }
             threadCPUPreviousMark.put(ti.getThreadId(), cpuTime);
