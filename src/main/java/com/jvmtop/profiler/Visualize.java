@@ -27,7 +27,7 @@ public class Visualize {
 
         List<CalltreeNode> children = node.getSortedChildren(config.minCost, parentTotalTime);
 
-        boolean skipping = config.canSkip && node.getTotalTime() == parentTotalTime && children.size() == 1 && node.getSelf() == 0;
+        boolean skipping = config.canSkip && node.getTotalTime() == parentTotalTime && children.size() == 1 && node.getSelf() == 0 && depth > 0;
         if (skipping) {
             if (!skipped) {
                 out.print(padding.toString());

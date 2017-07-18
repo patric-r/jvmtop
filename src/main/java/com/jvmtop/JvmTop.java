@@ -235,11 +235,11 @@ public class JvmTop
       maxDepth = (Integer) a.valueOf("profileMaxDepth");
     }
 
-    if (a.hasArgument("profileCanSkip")) {
+    if (a.has("profileCanSkip")) {
       canSkip = true;
     }
 
-    if (a.hasArgument("profilePrintTotal")) {
+    if (a.has("profilePrintTotal")) {
       printTotal = true;
     }
 
