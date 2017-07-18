@@ -33,6 +33,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jvmtop.profiler.Visualize;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -112,6 +113,13 @@ public class JvmTop
             "sets displayed thread name length in detail mode (defaults to 30)")
         .withRequiredArg().ofType(Integer.class);
 
+    parser.accepts("profileMinCost", "Profiler minimum function cost to be in output")
+            .withRequiredArg().ofType(Double.class);
+    parser.accepts("profileMinTotal", "Profiler minimum thread cost to be in output")
+            .withRequiredArg().ofType(Double.class);
+    parser.accepts("profileMaxDepth", "Profiler maximum function depth in output")
+            .withRequiredArg().ofType(Integer.class);
+
     return parser;
   }
 
@@ -149,6 +157,10 @@ public class JvmTop
     boolean threadLimitEnabled = true;
 
     Integer threadNameWidth = null;
+
+    Double minTotal = null;
+    Double minCost = null;
+    Integer maxDepth = null;
 
     if (a.hasArgument("delay"))
     {
@@ -202,6 +214,18 @@ public class JvmTop
       threadNameWidth = (Integer) a.valueOf("threadnamewidth");
     }
 
+    if (a.hasArgument("profileMinCost")) {
+      minCost = (Double)a.valueOf("profileMinCost");
+    }
+
+    if (a.hasArgument("profileMinTotal")) {
+      minTotal = (Double)a.valueOf("profileMinTotal");
+    }
+
+    if (a.hasArgument("profileMaxDepth")) {
+      maxDepth = (Integer) a.valueOf("profileMaxDepth");
+    }
+
     if (sysInfoOption)
     {
       outputSystemProps();
@@ -219,7 +243,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, width));
+          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth)));
         }
         else
         {
