@@ -70,7 +70,7 @@ public class CPUSampler {
         vmInfo_ = vmInfo;
     }
 
-    public List<CalltreeNode> getTop(double percentLimit) {
+    public List<CalltreeNode> getTop(double percentLimit, int limit) {
         List<CalltreeNode> statList = new ArrayList<CalltreeNode>();
 
         for (Map.Entry<Long, CalltreeNode> entry : data_.entrySet()) {
@@ -81,7 +81,7 @@ public class CPUSampler {
         }
         Collections.sort(statList);
 
-        return statList;
+        return statList.subList(0, Math.min(limit, statList.size()));
     }
 
     public long getTotal() {

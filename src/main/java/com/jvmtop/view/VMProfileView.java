@@ -88,7 +88,7 @@ public class VMProfileView extends AbstractConsoleView
 
     long total = cpuSampler_.getTotal();
     if (total < 1) return;
-    for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal)) {
+    for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
       Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, System.out, 0, config_, false);
     }
   }

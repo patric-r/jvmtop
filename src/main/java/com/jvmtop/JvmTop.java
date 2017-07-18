@@ -260,7 +260,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth, canSkip, printTotal)));
+          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal)));
         }
         else
         {
