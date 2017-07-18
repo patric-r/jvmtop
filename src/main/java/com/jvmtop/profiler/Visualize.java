@@ -59,13 +59,13 @@ public class Visualize {
         public boolean canSkip = false;
         public boolean printTotal = false;
 
-        public Config(Integer screenMaxWidth, Double minCost, Double minTotal, Integer maxDepth, Boolean canSkip, Boolean printTotal) {
+        public Config(Integer screenMaxWidth, Double minCost, Double minTotal, Integer maxDepth, boolean canSkip, boolean printTotal) {
             if (screenMaxWidth != null) this.screenMaxWidth = screenMaxWidth;
             if (minCost != null)        this.minCost = minCost;
             if (minTotal != null)       this.minTotal = minTotal;
             if (maxDepth != null)       this.maxDepth = maxDepth;
-            if (canSkip != null)        this.canSkip = canSkip;
-            if (printTotal != null)     this.printTotal = printTotal;
+            this.canSkip = canSkip;
+            this.printTotal = printTotal;
         }
     }
 }
