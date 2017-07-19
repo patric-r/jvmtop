@@ -91,7 +91,7 @@ public class CPUSampler {
     public void update(List<Integer> profileThreadIds) throws Exception {
         boolean samplesAcquired = false;
         ThreadInfo[] threads;
-        if (profileThreadIds == null)
+        if (profileThreadIds == null || profileThreadIds.size() == 0)
             threads = threadMxBean_.dumpAllThreads(false, false);
         else {
             long[] threadIds = new long[profileThreadIds.size()];
@@ -107,7 +107,7 @@ public class CPUSampler {
                 Long deltaCpuTime = (cpuTime - tCPUTime);
 
                 if (ti.getStackTrace().length > 0 && ti.getThreadState() == State.RUNNABLE) {
-                    data_.putIfAbsent(ti.getThreadId(), new CalltreeNode(ti.getThreadName()));
+                    data_.putIfAbsent(ti.getThreadId(), new CalltreeNode(null, ti.getThreadName()));
                     CalltreeNode root = data_.get(ti.getThreadId());
                     samplesAcquired = CalltreeNode.stack(ti, deltaCpuTime, root);
                     if (samplesAcquired) totalThreadCPUTime_.addAndGet(deltaCpuTime);

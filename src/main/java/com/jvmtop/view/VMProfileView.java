@@ -26,7 +26,11 @@ import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.profiler.CPUSampler;
 import com.jvmtop.profiler.CalltreeNode;
 import com.jvmtop.profiler.Config;
+import com.jvmtop.profiler.FileVisualize;
 import com.jvmtop.profiler.Visualize;
+
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 /**
  * CPU sampling-based profiler view which shows methods with top CPU usage.
@@ -90,7 +94,17 @@ public class VMProfileView extends AbstractConsoleView
     long total = cpuSampler_.getTotal();
     if (total < 1) return;
     for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-      Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, System.out, 0, config_, false);
+        Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, System.out, 0, config_, false);
+    }
+  }
+
+  @Override
+  public void last() throws Exception {
+    if (config_.fileVisualize != null) {
+      for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
+        FileVisualize.print(node, new PrintStream(new FileOutputStream(config_.fileVisualize)));
+        System.out.println("Printed dump to file: " + config_.fileVisualize);
+      }
     }
   }
 }

@@ -123,6 +123,9 @@ public class JvmTop
     parser.accepts("profileMaxDepth",
             "Profiler maximum function depth in output")
             .withRequiredArg().ofType(Integer.class);
+    parser.accepts("profileFileVisualize",
+            "Profiler file to output result (Cachegrind format)")
+            .withRequiredArg().ofType(String.class);
     parser.accepts("profileCanSkip",
             "Profiler ability to skip intermediate functions with same cpu usage as their parent");
     parser.accepts("profilePrintTotal",
@@ -175,6 +178,7 @@ public class JvmTop
     Integer maxDepth = null;
     boolean canSkip = false;
     boolean printTotal = false;
+    String fileVisualize = null;
     List<Integer> profileThreadIds = null;
 
     if (a.hasArgument("delay"))
@@ -249,6 +253,10 @@ public class JvmTop
       printTotal = true;
     }
 
+    if (a.hasArgument("profileFileVisualize")) {
+      fileVisualize = (String) a.valueOf("profileFileVisualize");
+    }
+
     if (a.hasArgument("profileThreadIds")) {
       @SuppressWarnings("unchecked")
       List<Integer> list = (List<Integer>) a.valuesOf("profileThreadIds");
@@ -272,7 +280,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileThreadIds)));
+          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileThreadIds, fileVisualize)));
         }
         else
         {
@@ -363,6 +371,7 @@ public class JvmTop
         }
         view.sleep((int) (delay_ * 1000));
       }
+      view.last();
     }
     catch (NoClassDefFoundError e)
     {

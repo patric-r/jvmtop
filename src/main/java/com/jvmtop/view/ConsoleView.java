@@ -52,4 +52,9 @@ public interface ConsoleView
    *
    */
   public void sleep(long millis) throws Exception;
+
+  /**
+   * Finalizer for view - close files, flush buffers
+   */
+  public void last() throws Exception;
 }

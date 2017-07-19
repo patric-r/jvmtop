@@ -2,33 +2,41 @@ package com.jvmtop.profiler;
 
 import java.lang.management.ThreadInfo;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CalltreeNode implements Comparable<CalltreeNode> {
-    private final String name;
+    private final StackTraceElement stackTraceElement;
+    private transient final String name;
     private AtomicLong intermediate = new AtomicLong(0);
     private AtomicLong self = new AtomicLong(0);
+    private AtomicInteger calls = new AtomicInteger(0);
 
-    private final ConcurrentMap<String, CalltreeNode> children = new ConcurrentHashMap<String, CalltreeNode>();
+    private final ConcurrentMap<StackTraceElement, CalltreeNode> children = new ConcurrentHashMap<StackTraceElement, CalltreeNode>();
 
-    public CalltreeNode(String name) {
+    public CalltreeNode(StackTraceElement stackTraceElement) {
+        this(stackTraceElement, stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName());
+    }
+
+    public CalltreeNode(StackTraceElement stackTraceElement, String name) {
+        this.stackTraceElement = stackTraceElement;
         this.name = name;
     }
 
     private CalltreeNode getNode(StackTraceElement element) {
-        String name = element.getClassName() + "." + element.getMethodName();
-
-        children.putIfAbsent(name, new CalltreeNode(name));
-        return children.get(name);
+        children.putIfAbsent(element, new CalltreeNode(element));
+        return children.get(element);
     }
 
     private CalltreeNode addIntermediate(StackTraceElement element, Long time) {
         CalltreeNode node = getNode(element);
         node.intermediate.addAndGet(time);
+        node.call();
         return node;
     }
 
@@ -36,6 +44,10 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
         CalltreeNode node = getNode(element);
         node.self.addAndGet(time);
         return node;
+    }
+
+    private void call() {
+        this.calls.addAndGet(1);
     }
 
     public String getName() {
@@ -54,6 +66,18 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
         return intermediate.get() + self.get();
     }
 
+    public int getCalls() {
+        return calls.get();
+    }
+
+    StackTraceElement getStackTraceElement() {
+        return stackTraceElement;
+    }
+
+    Collection<CalltreeNode> getChildren() {
+        return children.values();
+    }
+
     public List<CalltreeNode> getSortedChildren(double minCost, long totalCost) {
         List<CalltreeNode> result = new ArrayList<CalltreeNode>();
         for (CalltreeNode node : children.values()) {
@@ -66,6 +90,7 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
 
     public static boolean stack(ThreadInfo ti, Long deltaCPUTime, CalltreeNode root) {
         root.intermediate.addAndGet(deltaCPUTime);
+        root.call();
 
         StackTraceElement[] stackTrace = ti.getStackTrace();
         for (StackTraceElement stackTraceElement : stackTrace) {
