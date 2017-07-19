@@ -27,13 +27,14 @@ import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.jvmtop.profiler.Visualize;
+import com.jvmtop.profiler.Config;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -127,6 +128,10 @@ public class JvmTop
     parser.accepts("profilePrintTotal",
             "Profiler printing percent of total thread cpu");
 
+    parser.accepts("profileThreadIds",
+            "Profiler thread ids to profile (id is #123 after thread name), separated by comma")
+            .withRequiredArg().ofType(Integer.class).withValuesSeparatedBy(',');
+
     return parser;
   }
 
@@ -170,6 +175,7 @@ public class JvmTop
     Integer maxDepth = null;
     boolean canSkip = false;
     boolean printTotal = false;
+    List<Integer> profileThreadIds = null;
 
     if (a.hasArgument("delay"))
     {
@@ -243,6 +249,12 @@ public class JvmTop
       printTotal = true;
     }
 
+    if (a.hasArgument("profileThreadIds")) {
+      @SuppressWarnings("unchecked")
+      List<Integer> list = (List<Integer>) a.valuesOf("profileThreadIds");
+      profileThreadIds = list;
+    }
+
     if (sysInfoOption)
     {
       outputSystemProps();
@@ -260,7 +272,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Visualize.Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal)));
+          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileThreadIds)));
         }
         else
         {

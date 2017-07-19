@@ -88,9 +88,19 @@ public class CPUSampler {
         return totalThreadCPUTime_.get();
     }
 
-    public void update() throws Exception {
+    public void update(List<Integer> profileThreadIds) throws Exception {
         boolean samplesAcquired = false;
-        for (ThreadInfo ti : threadMxBean_.dumpAllThreads(false, false)) {
+        ThreadInfo[] threads;
+        if (profileThreadIds == null)
+            threads = threadMxBean_.dumpAllThreads(false, false);
+        else {
+            long[] threadIds = new long[profileThreadIds.size()];
+            for (int i = 0; i < profileThreadIds.size(); i++) threadIds[i] = profileThreadIds.get(i);
+
+            threads = threadMxBean_.getThreadInfo(threadIds, false, false);
+        }
+
+        for (ThreadInfo ti : threads) {
             long cpuTime = threadMxBean_.getThreadCpuTime(ti.getThreadId());
             Long tCPUTime = threadCPUPreviousMark.get(ti.getThreadId());
             if (tCPUTime != null) {

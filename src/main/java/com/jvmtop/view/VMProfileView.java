@@ -25,6 +25,7 @@ import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.profiler.CPUSampler;
 import com.jvmtop.profiler.CalltreeNode;
+import com.jvmtop.profiler.Config;
 import com.jvmtop.profiler.Visualize;
 
 /**
@@ -40,9 +41,9 @@ public class VMProfileView extends AbstractConsoleView
 
   private VMInfo     vmInfo_;
 
-  private Visualize.Config config_;
+  private Config config_;
 
-  public VMProfileView(int vmid, Visualize.Config config) throws Exception
+  public VMProfileView(int vmid, Config config) throws Exception
   {
     super(config.screenMaxWidth);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
@@ -56,10 +57,10 @@ public class VMProfileView extends AbstractConsoleView
   public void sleep(long millis) throws Exception
   {
     long cur = System.currentTimeMillis();
-    cpuSampler_.update();
+    cpuSampler_.update(config_.profileThreadIds);
     while (cur + millis > System.currentTimeMillis())
     {
-      cpuSampler_.update();
+      cpuSampler_.update(config_.profileThreadIds);
       super.sleep(100);
     }
 
