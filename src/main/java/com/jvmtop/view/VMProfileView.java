@@ -29,6 +29,7 @@ import com.jvmtop.profiler.Config;
 import com.jvmtop.profiler.FileVisualize;
 import com.jvmtop.profiler.Visualize;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
@@ -101,8 +102,10 @@ public class VMProfileView extends AbstractConsoleView
   @Override
   public void last() throws Exception {
     if (config_.fileVisualize != null) {
+      File visualize = new File(config_.fileVisualize);
+      PrintStream out = new PrintStream(new FileOutputStream(visualize));
       for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-        FileVisualize.print(node, new PrintStream(new FileOutputStream(config_.fileVisualize)));
+        FileVisualize.print(node, out);
         System.out.println("Printed dump to file: " + config_.fileVisualize);
       }
     }
