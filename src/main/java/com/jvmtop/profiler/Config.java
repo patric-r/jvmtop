@@ -13,9 +13,10 @@ public class Config {
     public int threadsLimit = Integer.MAX_VALUE;
     public List<Integer> profileThreadIds = new ArrayList<Integer>();
     public String fileVisualize;
+    public boolean profileRealTime;
 
     public Config(Integer screenMaxWidth, Double minCost, Double minTotal, Integer maxDepth, Integer threadsLimit,
-                  boolean canSkip, boolean printTotal, List<Integer> profileThreadIds, String fileVisualize) {
+                  boolean canSkip, boolean printTotal, boolean profileRealTime, List<Integer> profileThreadIds, String fileVisualize) {
         if (screenMaxWidth != null)   this.screenMaxWidth = screenMaxWidth;
         if (minCost != null)          this.minCost = minCost;
         if (minTotal != null)         this.minTotal = minTotal;
@@ -25,5 +26,6 @@ public class Config {
         if (fileVisualize != null)    this.fileVisualize = fileVisualize;
         this.canSkip = canSkip;
         this.printTotal = printTotal;
+        this.profileRealTime = profileRealTime;
     }
 }

@@ -53,18 +53,18 @@ public class VMProfileView extends AbstractConsoleView
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
-    cpuSampler_ = new CPUSampler(vmInfo_);
     config_ = config;
+    cpuSampler_ = new CPUSampler(vmInfo_, config_);
   }
 
   @Override
   public void sleep(long millis) throws Exception
   {
     long cur = System.currentTimeMillis();
-    cpuSampler_.update(config_.profileThreadIds);
+    cpuSampler_.update();
     while (cur + millis > System.currentTimeMillis())
     {
-      cpuSampler_.update(config_.profileThreadIds);
+      cpuSampler_.update();
       super.sleep(100);
     }
 

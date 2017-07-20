@@ -130,6 +130,9 @@ public class JvmTop
             "Profiler ability to skip intermediate functions with same cpu usage as their parent");
     parser.accepts("profilePrintTotal",
             "Profiler printing percent of total thread cpu");
+    parser.accepts("profileRealTime",
+            "Profiler uses real time instead of cpu time (usable for sleeps profiling)");
+
 
     parser.accepts("profileThreadIds",
             "Profiler thread ids to profile (id is #123 after thread name), separated by comma")
@@ -178,6 +181,7 @@ public class JvmTop
     Integer maxDepth = null;
     boolean canSkip = false;
     boolean printTotal = false;
+    boolean profileRealTime = false;
     String fileVisualize = null;
     List<Integer> profileThreadIds = null;
 
@@ -253,6 +257,10 @@ public class JvmTop
       printTotal = true;
     }
 
+    if (a.has("profileRealTime")) {
+      profileRealTime = true;
+    }
+
     if (a.hasArgument("profileFileVisualize")) {
       fileVisualize = (String) a.valueOf("profileFileVisualize");
     }
@@ -280,7 +288,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileThreadIds, fileVisualize)));
+          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileRealTime, profileThreadIds, fileVisualize)));
         }
         else
         {

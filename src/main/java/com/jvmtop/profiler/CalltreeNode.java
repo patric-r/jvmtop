@@ -88,23 +88,25 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
         return result;
     }
 
-    public static boolean stack(ThreadInfo ti, Long deltaCPUTime, CalltreeNode root) {
-        root.intermediate.addAndGet(deltaCPUTime);
+    public static boolean stack(ThreadInfo ti, Long deltaTime, CalltreeNode root, boolean profileRealTime) {
+        root.intermediate.addAndGet(deltaTime);
         root.call();
 
         StackTraceElement[] stackTrace = ti.getStackTrace();
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            if (NodeFilter.isReallySleeping(stackTraceElement)) return false;
-        }
+        if (profileRealTime)
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if (NodeFilter.isReallySleeping(stackTraceElement)) return false;
+            }
+
         if (stackTrace.length == 0) return false;
 
         CalltreeNode current = root;
         for (int i = stackTrace.length - 1; i >= 1; i--) {
             StackTraceElement stackTraceElement = stackTrace[i];
 
-            current = current.addIntermediate(stackTraceElement, deltaCPUTime);
+            current = current.addIntermediate(stackTraceElement, deltaTime);
         }
-        current.addSelf(stackTrace[0], deltaCPUTime);
+        current.addSelf(stackTrace[0], deltaTime);
         return true;
     }
 

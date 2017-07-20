@@ -58,16 +58,18 @@ public class CPUSampler {
             0);
 
     private VMInfo vmInfo_;
+    private Config config_;
 
     /**
      * @param vmInfo
      * @throws Exception
      */
-    public CPUSampler(VMInfo vmInfo) throws Exception {
+    public CPUSampler(VMInfo vmInfo, Config config) throws Exception {
         super();
         threadMxBean_ = vmInfo.getThreadMXBean();
         beginCPUTime_ = vmInfo.getProxyClient().getProcessCpuTime();
         vmInfo_ = vmInfo;
+        config_ = config;
     }
 
     public List<CalltreeNode> getTop(double percentLimit, int limit) {
@@ -88,32 +90,32 @@ public class CPUSampler {
         return totalThreadCPUTime_.get();
     }
 
-    public void update(List<Integer> profileThreadIds) throws Exception {
+    public void update() throws Exception {
         boolean samplesAcquired = false;
         ThreadInfo[] threads;
-        if (profileThreadIds == null || profileThreadIds.size() == 0)
+        if (config_.profileThreadIds == null || config_.profileThreadIds.size() == 0)
             threads = threadMxBean_.dumpAllThreads(false, false);
         else {
-            long[] threadIds = new long[profileThreadIds.size()];
-            for (int i = 0; i < profileThreadIds.size(); i++) threadIds[i] = profileThreadIds.get(i);
+            long[] threadIds = new long[config_.profileThreadIds.size()];
+            for (int i = 0; i < config_.profileThreadIds.size(); i++) threadIds[i] = config_.profileThreadIds.get(i);
 
             threads = threadMxBean_.getThreadInfo(threadIds, false, false);
         }
 
         for (ThreadInfo ti : threads) {
-            long cpuTime = threadMxBean_.getThreadCpuTime(ti.getThreadId());
-            Long tCPUTime = threadCPUPreviousMark.get(ti.getThreadId());
-            if (tCPUTime != null) {
-                Long deltaCpuTime = (cpuTime - tCPUTime);
+            long threadTime = config_.profileRealTime ? System.currentTimeMillis() : threadMxBean_.getThreadCpuTime(ti.getThreadId());
+            Long threadPrevTime = threadCPUPreviousMark.get(ti.getThreadId());
+            if (threadPrevTime != null) {
+                Long deltaTime = (threadTime - threadPrevTime);
 
-                if (ti.getStackTrace().length > 0 && ti.getThreadState() == State.RUNNABLE) {
+                if (ti.getStackTrace().length > 0 && (ti.getThreadState() == State.RUNNABLE || config_.profileRealTime)) {
                     data_.putIfAbsent(ti.getThreadId(), new CalltreeNode(null, ti.getThreadName()));
                     CalltreeNode root = data_.get(ti.getThreadId());
-                    samplesAcquired = CalltreeNode.stack(ti, deltaCpuTime, root);
-                    if (samplesAcquired) totalThreadCPUTime_.addAndGet(deltaCpuTime);
+                    samplesAcquired = CalltreeNode.stack(ti, deltaTime, root, config_.profileRealTime);
+                    if (samplesAcquired) totalThreadCPUTime_.addAndGet(deltaTime);
                 }
             }
-            threadCPUPreviousMark.put(ti.getThreadId(), cpuTime);
+            threadCPUPreviousMark.put(ti.getThreadId(), threadTime);
         }
         if (samplesAcquired) {
             updateCount_.incrementAndGet();
