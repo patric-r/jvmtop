@@ -26,7 +26,8 @@ import com.jvmtop.openjdk.tools.LocalVirtualMachine;
 import com.jvmtop.profiler.CPUSampler;
 import com.jvmtop.profiler.CalltreeNode;
 import com.jvmtop.profiler.Config;
-import com.jvmtop.profiler.FileVisualize;
+import com.jvmtop.profiler.CachegrindVisualize;
+import com.jvmtop.profiler.FlameVisualizer;
 import com.jvmtop.profiler.Visualize;
 
 import java.io.File;
@@ -94,19 +95,49 @@ public class VMProfileView extends AbstractConsoleView
 
     long total = cpuSampler_.getTotal();
     if (total < 1) return;
+    PrintStream visualize;
+    if (config_.fileVisualize != null) {
+      visualize = new PrintStream(new FileOutputStream(config_.fileVisualize));
+    } else {
+      visualize = System.out;
+    }
     for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-        Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, System.out, 0, config_, false);
+        Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, visualize, 0, config_, false);
+    }
+    if (config_.fileVisualize != null) {
+      visualize.close();
     }
   }
 
   @Override
   public void last() throws Exception {
-    if (config_.fileVisualize != null) {
-      File visualize = new File(config_.fileVisualize);
-      PrintStream out = new PrintStream(new FileOutputStream(visualize));
-      for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-        FileVisualize.print(node, out);
-        System.out.println("Printed dump to file: " + config_.fileVisualize);
+    if (config_.cachegrindVisualize != null) {
+      File visualize = new File(config_.cachegrindVisualize);
+      PrintStream out = null;
+      try {
+        out = new PrintStream(new FileOutputStream(visualize));
+        for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
+          CachegrindVisualize.print(node, out);
+          System.out.println("Printed dump to file: " + config_.cachegrindVisualize);
+        }
+      } finally {
+        if (out != null)
+          out.close();
+      }
+    }
+
+    if (config_.flameVisualize != null) {
+      File visualize = new File(config_.flameVisualize);
+      PrintStream out = null;
+      try {
+        out = new PrintStream(new FileOutputStream(visualize));
+        for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
+          FlameVisualizer.print(node, out);
+          System.out.println("Printed dump to file: " + config_.flameVisualize);
+        }
+      } finally {
+        if (out != null)
+          out.close();
       }
     }
   }

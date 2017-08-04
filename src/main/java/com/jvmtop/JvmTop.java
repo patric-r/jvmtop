@@ -82,9 +82,6 @@ public class JvmTop
     parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }),
         "shows this help").forHelp();
     parser
-        .accepts("once",
-            "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
-    parser
         .acceptsAll(Arrays.asList(new String[] { "n", "iteration" }),
             "jvmtop will exit after n output iterations").withRequiredArg()
         .ofType(Integer.class);
@@ -123,9 +120,17 @@ public class JvmTop
     parser.accepts("profileMaxDepth",
             "Profiler maximum function depth in output")
             .withRequiredArg().ofType(Integer.class);
+
     parser.accepts("profileFileVisualize",
+            "Profiler file to output result")
+            .withRequiredArg().ofType(String.class);
+    parser.accepts("profileCachegrindVisualize",
             "Profiler file to output result (Cachegrind format)")
             .withRequiredArg().ofType(String.class);
+    parser.accepts("profileFlameVisualize",
+            "Profiler file to output result (Flame graph format)")
+            .withRequiredArg().ofType(String.class);
+
     parser.accepts("profileCanSkip",
             "Profiler ability to skip intermediate functions with same cpu usage as their parent");
     parser.accepts("profilePrintTotal",
@@ -171,7 +176,7 @@ public class JvmTop
 
     boolean profileMode = a.has("profile");
 
-    Integer iterations = a.has("once") ? 1 : -1;
+    Integer iterations = -1;
 
     Integer threadlimit = null;
 
@@ -186,6 +191,8 @@ public class JvmTop
     boolean printTotal = false;
     boolean profileRealTime = false;
     String fileVisualize = null;
+    String cachegrindVisualize = null;
+    String flameVisualize = null;
     List<Long> profileThreadIds = null;
     List<String> profileThreadNames = null;
 
@@ -265,8 +272,17 @@ public class JvmTop
       profileRealTime = true;
     }
 
+    // VISUALIZE
     if (a.hasArgument("profileFileVisualize")) {
       fileVisualize = (String) a.valueOf("profileFileVisualize");
+    }
+
+    if (a.hasArgument("profileCachegrindVisualize")) {
+      cachegrindVisualize = (String) a.valueOf("profileCachegrindVisualize");
+    }
+
+    if (a.hasArgument("profileFlameVisualize")) {
+      flameVisualize = (String) a.valueOf("profileFlameVisualize");
     }
 
     if (a.hasArgument("profileThreadIds")) {
@@ -298,7 +314,10 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileRealTime, profileThreadIds, profileThreadNames, fileVisualize)));
+          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth,
+                  threadlimit, canSkip, printTotal,
+                  profileRealTime, profileThreadIds, profileThreadNames,
+                  fileVisualize, cachegrindVisualize, flameVisualize)));
         }
         else
         {

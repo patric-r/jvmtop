@@ -2,7 +2,7 @@ package com.jvmtop.profiler;
 
 import java.io.PrintStream;
 
-public class FileVisualize {
+public class CachegrindVisualize {
     private static void header(PrintStream out) {
         out.println("events: Instructions");
         out.println();
