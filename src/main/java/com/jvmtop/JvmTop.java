@@ -366,13 +366,14 @@ public class JvmTop
     }
   }
 
-  protected void run(ConsoleView view) throws Exception
+  protected void run(final ConsoleView view) throws Exception
   {
     try
     {
       System.setOut(new PrintStream(new BufferedOutputStream(
           new FileOutputStream(FileDescriptor.out)), false));
       int iterations = 0;
+      registerShutdown(view);
       while (!view.shouldExit())
       {
         if (maxIterations_ > 1 || maxIterations_ == -1)
@@ -389,7 +390,7 @@ public class JvmTop
         }
         view.sleep((int) (delay_ * 1000));
       }
-      view.last();
+//      view.last();
     }
     catch (NoClassDefFoundError e)
     {
@@ -401,6 +402,22 @@ public class JvmTop
           .println("       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
       System.err.println("");
     }
+  }
+
+  private static void registerShutdown(final ConsoleView view) {
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          System.out.print("Finish execution ... ");
+          view.last();
+          System.out.println("done!");
+        } catch (Exception e) {
+          System.err.println("Failed to run last in shutdown");
+          e.printStackTrace();
+        }
+      }
+    }));
   }
 
   /**
