@@ -136,7 +136,10 @@ public class JvmTop
 
     parser.accepts("profileThreadIds",
             "Profiler thread ids to profile (id is #123 after thread name), separated by comma")
-            .withRequiredArg().ofType(Integer.class).withValuesSeparatedBy(',');
+            .withRequiredArg().ofType(Long.class).withValuesSeparatedBy(',');
+    parser.accepts("profileThreadNames",
+            "Profiler thread names to profile, separated by comma")
+            .withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
 
     return parser;
   }
@@ -183,7 +186,8 @@ public class JvmTop
     boolean printTotal = false;
     boolean profileRealTime = false;
     String fileVisualize = null;
-    List<Integer> profileThreadIds = null;
+    List<Long> profileThreadIds = null;
+    List<String> profileThreadNames = null;
 
     if (a.hasArgument("delay"))
     {
@@ -267,8 +271,14 @@ public class JvmTop
 
     if (a.hasArgument("profileThreadIds")) {
       @SuppressWarnings("unchecked")
-      List<Integer> list = (List<Integer>) a.valuesOf("profileThreadIds");
+      List<Long> list = (List<Long>) a.valuesOf("profileThreadIds");
       profileThreadIds = list;
+    }
+
+    if (a.hasArgument("profileThreadNames")) {
+      @SuppressWarnings("unchecked")
+      List<String> list = (List<String>) a.valuesOf("profileThreadNames");
+      profileThreadNames = list;
     }
 
     if (sysInfoOption)
@@ -288,7 +298,7 @@ public class JvmTop
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileRealTime, profileThreadIds, fileVisualize)));
+          jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth, threadlimit, canSkip, printTotal, profileRealTime, profileThreadIds, profileThreadNames, fileVisualize)));
         }
         else
         {

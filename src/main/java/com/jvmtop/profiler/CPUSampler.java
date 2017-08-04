@@ -27,8 +27,10 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -70,6 +72,21 @@ public class CPUSampler {
         beginCPUTime_ = vmInfo.getProxyClient().getProcessCpuTime();
         vmInfo_ = vmInfo;
         config_ = config;
+        convertThreadNamesToIds(threadMxBean_, config_);
+    }
+
+    private static void convertThreadNamesToIds(ThreadMXBean threadMxBean_, Config config_) {
+        ThreadInfo[] threads = threadMxBean_.dumpAllThreads(false, false);
+        for (ThreadInfo thread : threads) {
+            String threadName = thread.getThreadName();
+            for (String name : config_.profileThreadNames) {
+                if (threadName.contains(name)) {
+                    config_.profileThreadIds.add(thread.getThreadId());
+                }
+            }
+        }
+        Set<Long> uniqIds = new HashSet<Long>(config_.profileThreadIds);
+        config_.profileThreadIds = new ArrayList<Long>(uniqIds);
     }
 
     public List<CalltreeNode> getTop(double percentLimit, int limit) {
