@@ -23,14 +23,9 @@ package com.jvmtop.view;
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
-import com.jvmtop.profiler.CPUSampler;
-import com.jvmtop.profiler.CalltreeNode;
-import com.jvmtop.profiler.Config;
-import com.jvmtop.profiler.CachegrindVisualize;
-import com.jvmtop.profiler.FlameVisualizer;
-import com.jvmtop.profiler.Visualize;
+import com.jvmtop.profiler.*;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
@@ -93,52 +88,34 @@ public class VMProfileView extends AbstractConsoleView
     System.out.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(),
         leftStr(vmInfo_.getDisplayName(), w));
 
-    long total = cpuSampler_.getTotal();
-    if (total < 1) return;
-    PrintStream visualize;
-    if (config_.fileVisualize != null) {
-      visualize = new PrintStream(new FileOutputStream(config_.fileVisualize));
-    } else {
-      visualize = System.out;
-    }
-    for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-        Visualize.print(node, node.getTotalTime(), node.getTotalTime(), total, visualize, 0, config_, false);
-    }
-    if (config_.fileVisualize != null) {
-      visualize.close();
-    }
+    long processTotalTime = cpuSampler_.getTotal();
+    if (processTotalTime < 1) return;
+    renderToFile(config_.fileVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new TreeVisualizer(config_, processTotalTime), System.out);
+    renderToFile(config_.jsonVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new JsonVisualizer(config_, processTotalTime), null);
   }
 
   @Override
   public void last() throws Exception {
-    if (config_.cachegrindVisualize != null) {
-      File visualize = new File(config_.cachegrindVisualize);
-      PrintStream out = null;
-      try {
-        out = new PrintStream(new FileOutputStream(visualize));
-        for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-          CachegrindVisualize.print(node, out);
-          System.out.println("Printed dump to file: " + config_.cachegrindVisualize);
-        }
-      } finally {
-        if (out != null)
-          out.close();
-      }
-    }
+    renderToFile(config_.cachegrindVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new CachegrindVisualizer(), null);
+    renderToFile(config_.flameVisualize,      config_.minTotal, config_.threadsLimit, cpuSampler_, new FlameVisualizer(), null);
+  }
 
-    if (config_.flameVisualize != null) {
-      File visualize = new File(config_.flameVisualize);
-      PrintStream out = null;
-      try {
-        out = new PrintStream(new FileOutputStream(visualize));
-        for (CalltreeNode node : cpuSampler_.getTop(config_.minTotal, config_.threadsLimit)) {
-          FlameVisualizer.print(node, out);
-          System.out.println("Printed dump to file: " + config_.flameVisualize);
-        }
-      } finally {
-        if (out != null)
-          out.close();
+  private static void renderToFile(String fileName, Double minTotal, Integer threadsLimit,
+                                   CPUSampler cpuSampler_, Visualizer visualizer, PrintStream defaultOut)
+          throws FileNotFoundException {
+    if (fileName == null && defaultOut == null) return;
+    PrintStream out = defaultOut;
+    try {
+      if (fileName != null)
+        out = new PrintStream(new FileOutputStream(fileName));
+
+      for (CalltreeNode node : cpuSampler_.getTop(minTotal, threadsLimit)) {
+        visualizer.print(node, out);
+        System.out.println("Printed dump to file: " + fileName);
       }
+    } finally {
+      if (fileName != null && out != null)
+        out.close();
     }
   }
 }

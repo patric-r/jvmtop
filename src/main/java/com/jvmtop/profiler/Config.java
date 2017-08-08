@@ -13,6 +13,7 @@ public class Config {
     public int threadsLimit = Integer.MAX_VALUE;
     public List<Long> profileThreadIds = new ArrayList<Long>();
     public String fileVisualize;
+    public String jsonVisualize;
     public String cachegrindVisualize;
     public String flameVisualize;
     public boolean profileRealTime;
@@ -21,7 +22,7 @@ public class Config {
     public Config(Integer screenMaxWidth, Double minCost, Double minTotal, Integer maxDepth, Integer threadsLimit,
                   boolean canSkip, boolean printTotal, boolean profileRealTime,
                   List<Long> profileThreadIds, List<String> profileThreadNames,
-                  String fileVisualize, String cachegrindVisualize, String flameVisualize) {
+                  String fileVisualize, String jsonVisualize, String cachegrindVisualize, String flameVisualize) {
         if (screenMaxWidth != null)      this.screenMaxWidth = screenMaxWidth;
         if (minCost != null)             this.minCost = minCost;
         if (minTotal != null)            this.minTotal = minTotal;
@@ -30,6 +31,7 @@ public class Config {
         if (profileThreadIds != null)    this.profileThreadIds = profileThreadIds;
         if (profileThreadNames != null)  this.profileThreadNames = profileThreadNames;
         if (fileVisualize != null)       this.fileVisualize = fileVisualize;
+        if (jsonVisualize != null)       this.jsonVisualize = jsonVisualize;
         if (cachegrindVisualize != null) this.cachegrindVisualize = cachegrindVisualize;
         if (flameVisualize != null)      this.flameVisualize = flameVisualize;
         this.canSkip = canSkip;

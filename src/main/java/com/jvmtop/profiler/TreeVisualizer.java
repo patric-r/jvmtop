@@ -3,13 +3,26 @@ package com.jvmtop.profiler;
 import java.io.PrintStream;
 import java.util.List;
 
-public class Visualize {
+public class TreeVisualizer implements Visualizer {
     private static final int PADDING = 4;
     private static final int OUT_FORMAT_LEN = 20; // [(99.0% | 88.0% self)]
-    private static final int TOTAL_FORMAT_LEN = 30; // [ (99.0% total | 88.0% process)]
+    private static final int TOTAL_FORMAT_LEN = 30; // [ (99.0% processTotalTime | 88.0% process)]
     private static final String BRANCH = " \\_ ";
 
-    public static void print(CalltreeNode node, long parentTotalTime, long threadTotalTime, long processTotalTime, PrintStream out, int depth, Config config, boolean skipped) {
+    private final Config config;
+    private final long processTotalTime;
+
+    public TreeVisualizer(Config config, long processTotalTime) {
+        this.config = config;
+        this.processTotalTime = processTotalTime;
+    }
+
+    @Override
+    public void print(CalltreeNode node, PrintStream out) {
+        printInternal(node, node.getTotalTime(), node.getTotalTime(), processTotalTime, out, 0, this.config, false);
+    }
+
+    private static void printInternal(CalltreeNode node, long parentTotalTime, long threadTotalTime, long processTotalTime, PrintStream out, int depth, Config config, boolean skipped) {
         if (depth > config.maxDepth) return;
         double percentFull = node.getTotalTime() * 100.0 / parentTotalTime;
         double percentSelf = node.getSelf() * 100.0 / parentTotalTime;
@@ -46,10 +59,8 @@ public class Visualize {
             }
         }
 
-        for (CalltreeNode child : children) {
-            int nextDepth = skipping && skipped ? depth : depth + 1;
-            print(child, node.getTotalTime(), threadTotalTime, processTotalTime, out, nextDepth, config, skipping);
-        }
+        int nextDepth = skipping && skipped ? depth : depth + 1;
+        for (CalltreeNode child : children)
+            printInternal(child, node.getTotalTime(), threadTotalTime, processTotalTime, out, nextDepth, config, skipping);
     }
-
 }

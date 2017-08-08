@@ -124,6 +124,9 @@ public class JvmTop
     parser.accepts("profileFileVisualize",
             "Profiler file to output result")
             .withRequiredArg().ofType(String.class);
+    parser.accepts("profileJSONVisualize",
+            "Profiler file to output result (JSON format)")
+            .withRequiredArg().ofType(String.class);
     parser.accepts("profileCachegrindVisualize",
             "Profiler file to output result (Cachegrind format)")
             .withRequiredArg().ofType(String.class);
@@ -191,6 +194,7 @@ public class JvmTop
     boolean printTotal = false;
     boolean profileRealTime = false;
     String fileVisualize = null;
+    String jsonVisualize = null;
     String cachegrindVisualize = null;
     String flameVisualize = null;
     List<Long> profileThreadIds = null;
@@ -277,6 +281,10 @@ public class JvmTop
       fileVisualize = (String) a.valueOf("profileFileVisualize");
     }
 
+    if (a.hasArgument("profileJSONVisualize")) {
+      jsonVisualize = (String) a.valueOf("profileJSONVisualize");
+    }
+
     if (a.hasArgument("profileCachegrindVisualize")) {
       cachegrindVisualize = (String) a.valueOf("profileCachegrindVisualize");
     }
@@ -317,7 +325,7 @@ public class JvmTop
           jvmTop.run(new VMProfileView(pid, new Config(width, minCost, minTotal, maxDepth,
                   threadlimit, canSkip, printTotal,
                   profileRealTime, profileThreadIds, profileThreadNames,
-                  fileVisualize, cachegrindVisualize, flameVisualize)));
+                  fileVisualize, jsonVisualize, cachegrindVisualize, flameVisualize)));
         }
         else
         {

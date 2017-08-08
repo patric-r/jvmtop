@@ -3,8 +3,9 @@ package com.jvmtop.profiler;
 import java.io.PrintStream;
 import java.util.Collection;
 
-public class FlameVisualizer {
-    public static void print(CalltreeNode node, PrintStream out) {
+public class FlameVisualizer implements Visualizer {
+    @Override
+    public void print(CalltreeNode node, PrintStream out) {
         printInternal("java;", node, out);
     }
 
