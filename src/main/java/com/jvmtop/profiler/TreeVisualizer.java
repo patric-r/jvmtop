@@ -18,6 +18,16 @@ public class TreeVisualizer implements Visualizer {
     }
 
     @Override
+    public void start(PrintStream out) {
+
+    }
+
+    @Override
+    public void end(PrintStream out) {
+
+    }
+
+    @Override
     public void print(CalltreeNode node, PrintStream out) {
         printInternal(node, node.getTotalTime(), node.getTotalTime(), processTotalTime, out, 0, this.config, false);
     }

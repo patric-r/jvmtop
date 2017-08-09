@@ -5,6 +5,15 @@ import java.util.Collection;
 
 public class FlameVisualizer implements Visualizer {
     @Override
+    public void start(PrintStream out) {
+
+    }
+
+    @Override
+    public void end(PrintStream out) {
+
+    }
+    @Override
     public void print(CalltreeNode node, PrintStream out) {
         printInternal("java;", node, out);
     }

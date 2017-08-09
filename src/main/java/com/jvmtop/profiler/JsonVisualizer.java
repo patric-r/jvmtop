@@ -40,16 +40,16 @@ public class JsonVisualizer implements Visualizer {
 
     @Override
     public void print(CalltreeNode node, PrintStream out) {
-        printHeader(out);
         printInternal(node, node.getTotalTime(), node.getTotalTime(), processTotalTime, out, 0, this.config, false, "#", 0);
-        printTailer(out);
     }
 
-    private static void printHeader(PrintStream out) {
+    @Override
+    public void start(PrintStream out) {
         out.println("[");
     }
 
-    private static void printTailer(PrintStream out) {
+    @Override
+    public void end(PrintStream out) {
         out.println();
         out.println("]");
     }

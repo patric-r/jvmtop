@@ -3,17 +3,22 @@ package com.jvmtop.profiler;
 import java.io.PrintStream;
 
 public class CachegrindVisualizer implements Visualizer {
-    private static void header(PrintStream out) {
+    @Override
+    public void start(PrintStream out) {
         out.println("events: Instructions");
         out.println();
     }
 
     @Override
     public void print(CalltreeNode node, PrintStream out) {
-        header(out);
         for (CalltreeNode child : node.getChildren()) { // really only one child there
             printInternal(child, out);
         }
+    }
+
+    @Override
+    public void end(PrintStream out) {
+
     }
 
     private static void printInternal(CalltreeNode node, PrintStream out) {

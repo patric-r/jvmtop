@@ -108,11 +108,12 @@ public class VMProfileView extends AbstractConsoleView
     try {
       if (fileName != null)
         out = new PrintStream(new FileOutputStream(fileName));
-
+      visualizer.start(out);
       for (CalltreeNode node : cpuSampler_.getTop(minTotal, threadsLimit)) {
         visualizer.print(node, out);
         System.out.println("Printed dump to file: " + fileName);
       }
+      visualizer.end(out);
     } finally {
       if (fileName != null && out != null)
         out.close();
