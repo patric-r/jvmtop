@@ -124,7 +124,7 @@ public class JvmTop
     parser.accepts("profileFileVisualize",
             "Profiler file to output result")
             .withRequiredArg().ofType(String.class);
-    parser.accepts("profileJSONVisualize",
+    parser.accepts("profileJsonVisualize",
             "Profiler file to output result (JSON format)")
             .withRequiredArg().ofType(String.class);
     parser.accepts("profileCachegrindVisualize",
@@ -281,8 +281,8 @@ public class JvmTop
       fileVisualize = (String) a.valueOf("profileFileVisualize");
     }
 
-    if (a.hasArgument("profileJSONVisualize")) {
-      jsonVisualize = (String) a.valueOf("profileJSONVisualize");
+    if (a.hasArgument("profileJsonVisualize")) {
+      jsonVisualize = (String) a.valueOf("profileJsonVisualize");
     }
 
     if (a.hasArgument("profileCachegrindVisualize")) {
