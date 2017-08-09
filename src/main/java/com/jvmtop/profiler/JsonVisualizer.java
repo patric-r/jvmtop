@@ -63,6 +63,8 @@ public class JsonVisualizer implements Visualizer {
 
         boolean skipping = config.canSkip && node.getTotalTime() == parentTotalTime && children.size() == 1 && node.getSelf() == 0 && depth > 0;
 
+        if (depth > 0 && !skipped) out.println(',');
+
         if (skipping) {
             if (!skipped) {
                 out.println(json(idNumber, parent, "[...skipping...]") + ",");
@@ -74,7 +76,6 @@ public class JsonVisualizer implements Visualizer {
                 double percentProcess = node.getTotalTime() * 100.0 / processTotalTime;
                 text = text + String.format(" (%.1f%% thread | %.1f%% process) %d calls", percentThread, percentProcess, node.getCalls());
             }
-            if (depth > 0) out.println(',');
             out.print(json(idNumber, parent, text));
         }
 
