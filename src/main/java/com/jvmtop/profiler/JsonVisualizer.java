@@ -1,7 +1,6 @@
 package com.jvmtop.profiler;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.util.List;
 
 public class JsonVisualizer implements Visualizer {
@@ -65,10 +64,11 @@ public class JsonVisualizer implements Visualizer {
 
         if (depth > 0 && !skipped) out.println(',');
 
+        String currentId = id(idNumber, parent);
+
         if (skipping) {
-            if (!skipped) {
-                out.println(json(idNumber, parent, "[...skipping...]") + ",");
-            }
+            if (!skipped) out.println(json(idNumber, parent, "[...skipping...]") + ",");
+            else currentId = parent;
         } else {
             String text = String.format("%s (%.1f%% | %.1f%% self)", node.getName(), percentFull, percentSelf);
             if (config.printTotal) {
@@ -82,6 +82,6 @@ public class JsonVisualizer implements Visualizer {
         int nextDepth = skipping && skipped ? depth : depth + 1;
         int childNum = 0;
         for (CalltreeNode child : children)
-            printInternal(child, node.getTotalTime(), threadTotalTime, processTotalTime, out, nextDepth, config, skipping, id(idNumber, parent), childNum++);
+            printInternal(child, node.getTotalTime(), threadTotalTime, processTotalTime, out, nextDepth, config, skipping, currentId, childNum++);
     }
 }
