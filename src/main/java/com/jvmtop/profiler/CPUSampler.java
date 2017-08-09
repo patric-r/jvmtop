@@ -76,16 +76,17 @@ public class CPUSampler {
     }
 
     private static void convertThreadNamesToIds(ThreadMXBean threadMxBean_, Config config_) {
+        if (config_.profileThreadNames.size() == 0) return;
+        Set<Long> uniqIds = new HashSet<Long>(config_.profileThreadIds);
         ThreadInfo[] threads = threadMxBean_.dumpAllThreads(false, false);
         for (ThreadInfo thread : threads) {
             String threadName = thread.getThreadName();
             for (String name : config_.profileThreadNames) {
                 if (threadName.contains(name)) {
-                    config_.profileThreadIds.add(thread.getThreadId());
+                    uniqIds.add(thread.getThreadId());
                 }
             }
         }
-        Set<Long> uniqIds = new HashSet<Long>(config_.profileThreadIds);
         config_.profileThreadIds = new ArrayList<Long>(uniqIds);
     }
 
