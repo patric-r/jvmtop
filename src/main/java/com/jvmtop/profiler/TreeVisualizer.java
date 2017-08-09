@@ -49,7 +49,7 @@ public class TreeVisualizer implements Visualizer {
         } else {
             out.print(padding.toString());
             out.printf("%." + functionMaxWidth + "s (%.1f%% | %.1f%% self)",
-                    node.getName(), percentFull, percentSelf, node.getIntermediate(), node.getSelf());
+                    node.getName(), percentFull, percentSelf/*, node.getIntermediate(), node.getSelf()*/);
             if (config.printTotal) {
                 double percentThread = node.getTotalTime() * 100.0 / threadTotalTime;
                 double percentProcess = node.getTotalTime() * 100.0 / processTotalTime;
