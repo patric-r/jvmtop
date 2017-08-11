@@ -43,6 +43,7 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
     private CalltreeNode addSelf(StackTraceElement element, Long time) {
         CalltreeNode node = getNode(element);
         node.self.addAndGet(time);
+        node.call();
         return node;
     }
 
