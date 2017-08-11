@@ -6,6 +6,7 @@ import java.util.List;
 public class JsonVisualizer implements Visualizer {
     private final Config config;
     private final long processTotalTime;
+    private int parentId = 0;
 
     public JsonVisualizer(Config config, long processTotalTime) {
         this.config = config;
@@ -39,7 +40,7 @@ public class JsonVisualizer implements Visualizer {
 
     @Override
     public void print(CalltreeNode node, PrintStream out) {
-        printInternal(node, node.getTotalTime(), node.getTotalTime(), processTotalTime, out, 0, this.config, false, "#", 0);
+        printInternal(node, node.getTotalTime(), node.getTotalTime(), processTotalTime, out, 0, this.config, false, "#", parentId++);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class JsonVisualizer implements Visualizer {
 
         boolean skipping = config.canSkip && node.getTotalTime() == parentTotalTime && children.size() == 1 && node.getSelf() == 0 && depth > 0;
 
-        if (depth > 0 && !skipped) out.println(',');
+        if (depth + idNumber > 0 && !skipped) out.println(',');
 
         String currentId = id(idNumber, parent);
 
