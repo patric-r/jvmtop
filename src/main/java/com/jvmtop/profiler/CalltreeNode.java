@@ -94,7 +94,7 @@ public class CalltreeNode implements Comparable<CalltreeNode> {
         root.call();
 
         StackTraceElement[] stackTrace = ti.getStackTrace();
-        if (profileRealTime)
+        if (!profileRealTime)
             for (StackTraceElement stackTraceElement : stackTrace) {
                 if (NodeFilter.isReallySleeping(stackTraceElement)) return false;
             }
