@@ -20,6 +20,7 @@
  */
 package com.jvmtop.view;
 
+import com.jvmtop.Config;
 import com.jvmtop.monitor.VMInfo;
 import com.jvmtop.monitor.VMInfoState;
 import com.jvmtop.openjdk.tools.LocalVirtualMachine;
@@ -46,7 +47,7 @@ public class VMProfileView extends AbstractConsoleView
 
   public VMProfileView(int vmid, Config config) throws Exception
   {
-    super(config.screenMaxWidth);
+    super(config.width);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
@@ -90,14 +91,14 @@ public class VMProfileView extends AbstractConsoleView
 
     long processTotalTime = cpuSampler_.getTotal();
     if (processTotalTime < 1) return;
-    renderToFile(config_.fileVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new TreeVisualizer(config_, processTotalTime), System.out);
-    renderToFile(config_.jsonVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new JsonVisualizer(config_, processTotalTime), null);
+    renderToFile(config_.fileVisualize, config_.minTotal, config_.threadlimit, cpuSampler_, new TreeVisualizer(config_, processTotalTime), System.out);
+    renderToFile(config_.jsonVisualize, config_.minTotal, config_.threadlimit, cpuSampler_, new JsonVisualizer(config_, processTotalTime), null);
   }
 
   @Override
   public void last() throws Exception {
-    renderToFile(config_.cachegrindVisualize, config_.minTotal, config_.threadsLimit, cpuSampler_, new CachegrindVisualizer(), null);
-    renderToFile(config_.flameVisualize,      config_.minTotal, config_.threadsLimit, cpuSampler_, new FlameVisualizer(), null);
+    renderToFile(config_.cachegrindVisualize, config_.minTotal, config_.threadlimit, cpuSampler_, new CachegrindVisualizer(), null);
+    renderToFile(config_.flameVisualize,      config_.minTotal, config_.threadlimit, cpuSampler_, new FlameVisualizer(), null);
   }
 
   private static void renderToFile(String fileName, Double minTotal, Integer threadsLimit,

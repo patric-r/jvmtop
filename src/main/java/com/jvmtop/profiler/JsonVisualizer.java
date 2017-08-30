@@ -1,5 +1,7 @@
 package com.jvmtop.profiler;
 
+import com.jvmtop.Config;
+
 import java.io.PrintStream;
 import java.util.List;
 

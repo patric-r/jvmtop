@@ -1,5 +1,7 @@
 package com.jvmtop.profiler;
 
+import com.jvmtop.Config;
+
 import java.io.PrintStream;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class TreeVisualizer implements Visualizer {
             padding.append(BRANCH);
         }
 
-        int functionMaxWidth = config.screenMaxWidth - (PADDING * depth + BRANCH.length()) - OUT_FORMAT_LEN; // [     \_ ]
+        int functionMaxWidth = config.width - (PADDING * depth + BRANCH.length()) - OUT_FORMAT_LEN; // [     \_ ]
         if (config.printTotal) functionMaxWidth -= TOTAL_FORMAT_LEN;
         if (functionMaxWidth <= 0) return;
 

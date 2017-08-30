@@ -20,6 +20,7 @@
  */
 package com.jvmtop.profiler;
 
+import com.jvmtop.Config;
 import com.jvmtop.monitor.VMInfo;
 
 import java.lang.Thread.State;

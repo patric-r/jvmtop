@@ -535,7 +535,7 @@ public class CommandLine {
 
     /**
      * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
-     * @param runnable the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param runnable the command to start when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
@@ -557,10 +557,10 @@ public class CommandLine {
      *     cmd.usage(out, ansi);
      *     return;
      * }
-     * runnable.run();
+     * runnable.start();
      * </pre>
      * Note that this method is not suitable for commands with subcommands.
-     * @param runnable the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param runnable the command to start when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
