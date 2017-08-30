@@ -73,7 +73,7 @@ public class JvmTop {
     @Option(names = {"-v", "--verbose"}, description = "Outputs verbose logs")
     private boolean verbose = false;
 
-    @Parameters(index = "0", description = "PID to connect to, override parameter")
+    @Parameters(index = "0", arity = "0..1", description = "PID to connect to, override parameter")
     private Integer pidParameter = null;
     @Option(names = {"-p", "--pid"}, description = "PID to connect to")
     private Integer pid = null;
