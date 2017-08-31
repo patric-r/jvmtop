@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 /**
  * Experimental and very basic sampling-based CPU-Profiler.
@@ -78,12 +79,16 @@ public class CPUSampler {
 
     private static void convertThreadNamesToIds(ThreadMXBean threadMxBean_, Config config_) {
         if (config_.profileThreadNames.size() == 0) return;
+        List<Pattern> regexes = new ArrayList<Pattern>(config_.profileThreadNames.size());
+        for (String tn : config_.profileThreadNames) {
+            regexes.add(Pattern.compile(tn));
+        }
         Set<Long> uniqIds = new HashSet<Long>(config_.profileThreadIds);
         ThreadInfo[] threads = threadMxBean_.dumpAllThreads(false, false);
         for (ThreadInfo thread : threads) {
             String threadName = thread.getThreadName();
-            for (String name : config_.profileThreadNames) {
-                if (threadName.contains(name)) {
+            for (Pattern name : regexes) {
+                if (name.matcher(threadName).matches()) {
                     uniqIds.add(thread.getThreadId());
                 }
             }
