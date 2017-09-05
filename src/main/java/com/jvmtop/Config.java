@@ -4,6 +4,7 @@ import com.jvmtop.cli.CommandLine.Command;
 import com.jvmtop.cli.CommandLine.Option;
 import com.jvmtop.cli.CommandLine.Parameters;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Command(name = "JvmTop", description = "Java sampling command-line profiler", version = "1.0.2")
@@ -52,17 +53,17 @@ public class Config {
     @Option(names = "--profileRealTime", description = "Profiler uses real time instead of cpu time (usable for sleeps profiling)")
     public boolean profileRealTime = false;
     @Option(names = "--profileFileVisualize", description = "Profiler file to output result")
-    public String fileVisualize;
+    public String fileVisualize = null;
     @Option(names = "--profileJsonVisualize", description = "Profiler file to output result (JSON format)")
-    public String jsonVisualize;
+    public String jsonVisualize = null;
     @Option(names = "--profileCachegrindVisualize", description = "Profiler file to output result (Cachegrind format)")
-    public String cachegrindVisualize;
+    public String cachegrindVisualize = null;
     @Option(names = "--profileFlameVisualize", description = "Profiler file to output result (Flame graph format)")
-    public String flameVisualize;
+    public String flameVisualize = null;
     @Option(names = "--profileThreadIds", description = "Profiler thread ids to profile (id is #123 after thread name)", split = ",", type = Long.class)
-    public List<Long> profileThreadIds;
+    public List<Long> profileThreadIds = new ArrayList<Long>();
     @Option(names = "--profileThreadNames", description = "Profiler thread names to profile", split = ",")
-    public List<String> profileThreadNames;
+    public List<String> profileThreadNames = new ArrayList<String>();
 
     public Config() {
     }
