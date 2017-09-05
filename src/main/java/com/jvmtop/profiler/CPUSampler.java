@@ -22,6 +22,7 @@ package com.jvmtop.profiler;
 
 import com.jvmtop.Config;
 import com.jvmtop.monitor.VMInfo;
+import com.jvmtop.monitor.VMInfoState;
 
 import java.lang.Thread.State;
 import java.lang.management.ThreadInfo;
@@ -115,6 +116,9 @@ public class CPUSampler {
     }
 
     public void update() throws Exception {
+        if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR) {
+            return; // most possible, process is already terminated
+        }
         boolean samplesAcquired = false;
         ThreadInfo[] threads;
         if (config_.profileThreadIds == null || config_.profileThreadIds.size() == 0)
