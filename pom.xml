@@ -6,37 +6,151 @@
 
     <groupId>com.jvmtop</groupId>
     <artifactId>jvmtop</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <description>Java monitoring for the command-line, profiler included</description>
 
-    <dependencies>
-        <dependency>
-            <groupId>net.sf.jopt-simple</groupId>
-            <artifactId>jopt-simple</artifactId>
-            <version>4.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>${jdk.version}</version>
-            <scope>system</scope>
-            <systemPath>${toolsjar}</systemPath>
-        </dependency>
-    </dependencies>
+    <profiles>
+        <profile>
+            <id>java8</id>
+
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>${jdk.version}</version>
+                    <scope>system</scope>
+                    <systemPath>${toolsjar}</systemPath>
+                </dependency>
+            </dependencies>
 
 
-    <properties>
-        <!-- change it to point to your tools.jar from your JDK -->
-        <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-        <jdk.version>1.8</jdk.version>
-    </properties>
+            <properties>
+                <!-- change it to point to your tools.jar from your JDK -->
+                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
+                <jdk.version>1.6</jdk.version>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.7.0</version>
+                        <configuration>
+                            <source>${jdk.version}</source>
+                            <target>${jdk.version}</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+
+        <profile>
+            <id>java9</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+            <properties>
+                <jdk.version>1.8</jdk.version>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.7.0</version>
+                        <configuration>
+                            <source>${jdk.version}</source>
+                            <target>${jdk.version}</target>
+                        </configuration>
+                    </plugin>
+
+                    <!-- maven Java 9 Multi Release jar support -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>3.0.2</version>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Specification-Title>${project.artifactId}</Specification-Title>
+                                    <Implementation-Title>${project.artifactId}</Implementation-Title>
+                                    <Implementation-Version>${project.version}</Implementation-Version>
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+                            <execution>
+                                <id>compile-java9</id>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${java9.build.outputDirectory}" />
+                                        <javac source="1.9" target="1.9" srcdir="${java9.sourceDirectory}" destdir="${java9.build.outputDirectory}"
+                                               classpath="${project.build.outputDirectory}" includeantruntime="false">
+
+                                            <compilerarg value="--add-modules" />
+                                            <compilerarg value="jdk.management,jdk.management.agent,jdk.attach,jdk.internal.jvmstat,java.rmi,java.management.rmi,java.desktop,java.sql" />
+                                            <compilerarg value="--add-exports=java.rmi/sun.rmi.server=ALL-UNNAMED" />
+                                            <compilerarg value="--add-exports=java.rmi/sun.rmi.transport=ALL-UNNAMED" />
+                                            <compilerarg value="--add-exports=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED" />
+                                        </javac>
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>3.0.2</version>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${java9.build.outputDirectory}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java9.build.outputDirectory>${project.build.directory}/generated-resources/</java9.build.outputDirectory>
+        <java9.sourceDirectory>src/main/java</java9.sourceDirectory>
+	</properties>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>3.1.0</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>

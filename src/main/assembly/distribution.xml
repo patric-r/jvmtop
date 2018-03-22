@@ -20,8 +20,9 @@
             <fileMode>0755</fileMode>
         </file>
         <file>
-            <source>${project.build.directory}/jvmtop.jar</source>
+            <source>${project.build.directory}/jvmtop-${project.version}.jar</source>
             <outputDirectory>/</outputDirectory>
+            <destName>jvmtop.jar</destName>
         </file>
     </files>
 </assembly>

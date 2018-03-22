@@ -31,6 +31,7 @@ package com.jvmtop.openjdk.tools;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,19 +39,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.sun.tools.attach.AgentInitializationException;
+import com.sun.tools.attach.AgentLoadException;
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+
 import sun.jvmstat.monitor.HostIdentifier;
 import sun.jvmstat.monitor.MonitorException;
 import sun.jvmstat.monitor.MonitoredHost;
 import sun.jvmstat.monitor.MonitoredVm;
 import sun.jvmstat.monitor.MonitoredVmUtil;
 import sun.jvmstat.monitor.VmIdentifier;
-import sun.management.ConnectorAddressLink;
-
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 // Sun specific
 // Sun private
 
@@ -227,7 +227,8 @@ public class LocalVirtualMachine
           // use the command line as the display name
           name = MonitoredVmUtil.commandLine(mvm);
           attachable = MonitoredVmUtil.isAttachable(mvm);
-          address = ConnectorAddressLink.importFrom(pid);
+
+          address = importFrom(pid);
           mvm.detach();
         }
         catch (Exception x)
@@ -347,41 +348,49 @@ public class LocalVirtualMachine
       throw ioe;
     }
 
-    String home = vm.getSystemProperties().getProperty("java.home");
+    if (isJava9(vm.getSystemProperties())) {
+      //running JVM is java 9
+      vm.startLocalManagementAgent();
 
-    // Normally in ${java.home}/jre/lib/management-agent.jar but might
-    // be in ${java.home}/lib in build environments.
+    } else {
+      //running JVM is Java 8
 
-    String agent = home + File.separator + "jre" + File.separator + "lib"
-        + File.separator + "management-agent.jar";
-    File f = new File(agent);
-    if (!f.exists())
-    {
-      agent = home + File.separator + "lib" + File.separator
-          + "management-agent.jar";
-      f = new File(agent);
+      String home = vm.getSystemProperties().getProperty("java.home");
+
+      // Normally in ${java.home}/jre/lib/management-agent.jar but might
+      // be in ${java.home}/lib in build environments.
+
+      String agent = home + File.separator + "jre" + File.separator + "lib"
+              + File.separator + "management-agent.jar";
+      File f = new File(agent);
       if (!f.exists())
       {
-        throw new IOException("Management agent not found");
+        agent = home + File.separator + "lib" + File.separator
+                + "management-agent.jar";
+        f = new File(agent);
+        if (!f.exists())
+        {
+          throw new IOException("Management agent not found");
+        }
       }
-    }
 
-    agent = f.getCanonicalPath();
-    try
-    {
-      vm.loadAgent(agent, "com.sun.management.jmxremote");
-    }
-    catch (AgentLoadException x)
-    {
-      IOException ioe = new IOException(x.getMessage());
-      ioe.initCause(x);
-      throw ioe;
-    }
-    catch (AgentInitializationException x)
-    {
-      IOException ioe = new IOException(x.getMessage());
-      ioe.initCause(x);
-      throw ioe;
+      agent = f.getCanonicalPath();
+      try
+      {
+        vm.loadAgent(agent, "com.sun.management.jmxremote");
+      }
+      catch (AgentLoadException x)
+      {
+        IOException ioe = new IOException(x.getMessage());
+        ioe.initCause(x);
+        throw ioe;
+      }
+      catch (AgentInitializationException x)
+      {
+        IOException ioe = new IOException(x.getMessage());
+        ioe.initCause(x);
+        throw ioe;
+      }
     }
 
     // get the connector address
@@ -389,7 +398,7 @@ public class LocalVirtualMachine
     {
       Properties localProperties = vm.getSystemProperties();
       this.address = ((String) localProperties
-          .get("com.sun.management.jmxremote.localConnectorAddress"));
+              .get("com.sun.management.jmxremote.localConnectorAddress"));
     }
     else
     {
@@ -398,5 +407,36 @@ public class LocalVirtualMachine
     }
 
     vm.detach();
+  }
+
+  private static boolean isJava9(Properties properties) {
+    double javaVersion = Double.parseDouble(properties.getProperty("java.specification.version"));
+    return javaVersion >= 1.9;
+  }
+
+  private static String importFrom(int pid) {
+    if (isJava9(System.getProperties())) {
+
+      try {
+        final Class<?> clazz = Class.forName("jdk.internal.agent.ConnectorAddressLink");
+        final Method method = clazz.getMethod("importFrom", Integer.class);
+        final Object instance = clazz.getDeclaredConstructor().newInstance();
+        return (String) method.invoke(instance, pid);
+
+      } catch (Exception e) {
+        throw new IllegalStateException("Could not load needed java 9 class", e);
+      }
+    } else {
+
+      try {
+        final Class<?> clazz = Class.forName("sun.management.ConnectorAddressLink");
+        final Method method = clazz.getMethod("importFrom", Integer.class);
+        final Object instance = clazz.getDeclaredConstructor().newInstance();
+        return (String) method.invoke(instance, pid);
+
+      } catch (Exception e) {
+        throw new IllegalStateException("Could not load needed java 9 class", e);
+      }
+    }
   }
 }
