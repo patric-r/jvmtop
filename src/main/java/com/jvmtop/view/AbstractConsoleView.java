@@ -194,4 +194,9 @@ public abstract class AbstractConsoleView implements ConsoleView
   {
     Thread.sleep(millis);
   }
+
+  @Override
+  public void last() throws Exception {
+
+  }
 }
