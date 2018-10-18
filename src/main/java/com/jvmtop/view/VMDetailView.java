@@ -191,6 +191,8 @@ public class VMDetailView extends AbstractConsoleView
 
       cpuTimeMap = sortByValue(cpuTimeMap, true);
 
+      this.numberOfDisplayedThreads_= height - 12; // 11 lines are taken up with static info, 1 line needs to be left at the bottom
+
       int displayedThreads = 0;
       for (Long tid : cpuTimeMap.keySet())
       {
