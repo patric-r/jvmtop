@@ -161,8 +161,11 @@ public class VMDetailView extends AbstractConsoleView
    */
   private void printTopThreads() throws Exception
   {
-    System.out.printf(" %6s %-" + threadNameDisplayWidth_
-        + "s  %13s %8s    %8s %5s %n", "TID", "NAME", "STATE", "CPU",
+    // FIXME: Updating a field of the class here isn't very smart
+    this.threadNameDisplayWidth_= getUsableThreadNameWidth();
+
+    System.out.printf("%6s %-" + threadNameDisplayWidth_
+        + "s %13s %6s %8s %9s %n", "TID", "NAME", "STATE", "CPU",
         "TOTALCPU", "BLOCKEDBY");
 
     if (vmInfo_.getThreadMXBean().isThreadCpuTimeSupported())
@@ -201,8 +204,8 @@ public class VMDetailView extends AbstractConsoleView
         if (info != null)
         {
           System.out.printf(
-              " %6d %-" + threadNameDisplayWidth_
-                  + "s  %13s %5.2f%%    %5.2f%% %5s %n",
+              "%6d %-" + threadNameDisplayWidth_
+                  + "s %13s %5.2f%%   %5.2f%% %5s %n",
               tid,
               leftStr(info.getThreadName(), threadNameDisplayWidth_),
               info.getThreadState(),
@@ -286,5 +289,11 @@ public class VMDetailView extends AbstractConsoleView
       return 0;
     }
     return deltaThreadCpuTime / factor / totalTime * 100d;
+  }
+
+
+  private int getUsableThreadNameWidth() {
+    // the usable width for the thread column is the terminal width - other columns - whitespace
+    return this.width - 7 - 14 - 7 - 9 - 10;
   }
 }
