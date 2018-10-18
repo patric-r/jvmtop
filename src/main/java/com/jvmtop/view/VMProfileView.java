@@ -41,9 +41,9 @@ public class VMProfileView extends AbstractConsoleView
 
   private VMInfo     vmInfo_;
 
-  public VMProfileView(int vmid, Integer width) throws Exception
+  public VMProfileView(int vmid, Integer width, Integer height) throws Exception
   {
-    super(width);
+    super(width, height);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
@@ -87,7 +87,10 @@ public class VMProfileView extends AbstractConsoleView
     // these are the spaces taken up by the formatting, the rest is usable
     // for printing out the method name
     w = width - (1 + 6 + 3 + 9 + 3 + 2);
-    for (Iterator<MethodStats> iterator = cpuSampler_.getTop(20).iterator(); iterator
+
+    int noOfMethods= height - 6; // 5 lines are taken up with static info, 1 line needs to be left at the bottom
+
+    for (Iterator<MethodStats> iterator = cpuSampler_.getTop(noOfMethods).iterator(); iterator
         .hasNext();)
     {
       MethodStats stats = iterator.next();
