@@ -108,6 +108,10 @@ public class JvmTop
             "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
 
     parser
+        .acceptsAll(Arrays.asList(new String[] { "h", "height" }),
+            "Height in rows for the console display").withRequiredArg().ofType(Integer.class);
+
+    parser
         .accepts("threadnamewidth",
             "sets displayed thread name length in detail mode (defaults to 30)")
         .withRequiredArg().ofType(Integer.class);
@@ -137,6 +141,8 @@ public class JvmTop
     Integer pid = null;
 
     Integer width = null;
+
+    Integer height = null;
 
     double delay = 1.0;
 
@@ -180,6 +186,11 @@ public class JvmTop
       width = (Integer) a.valueOf("width");
     }
 
+    if (a.hasArgument("height"))
+    {
+      height = (Integer) a.valueOf("height");
+    }
+
     if (a.hasArgument("threadlimit"))
     {
       threadlimit = (Integer) a.valueOf("threadlimit");
@@ -213,17 +224,17 @@ public class JvmTop
       jvmTop.setMaxIterations(iterations);
       if (pid == null)
       {
-        jvmTop.run(new VMOverviewView(width));
+        jvmTop.run(new VMOverviewView(width, height));
       }
       else
       {
         if (profileMode)
         {
-          jvmTop.run(new VMProfileView(pid, width));
+          jvmTop.run(new VMProfileView(pid, width, height));
         }
         else
         {
-          VMDetailView vmDetailView = new VMDetailView(pid, width);
+          VMDetailView vmDetailView = new VMDetailView(pid, width, height);
           vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
           if (threadlimit != null)
           {

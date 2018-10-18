@@ -55,9 +55,9 @@ public class VMDetailView extends AbstractConsoleView
   //TODO: refactor
   private Map<Long, Long> previousThreadCPUMillis   = new HashMap<Long, Long>();
 
-  public VMDetailView(int vmid, Integer width) throws Exception
+  public VMDetailView(int vmid, Integer width, Integer height) throws Exception
   {
-    super(width);
+    super(width, height);
     LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
         .getLocalVirtualMachine(vmid);
     vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);

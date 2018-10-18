@@ -45,8 +45,8 @@ public class VMOverviewView extends AbstractConsoleView
 
   private Map<Integer, LocalVirtualMachine> vmMap      = new HashMap<Integer, LocalVirtualMachine>();
 
-  public VMOverviewView(Integer width) {
-    super(width);
+  public VMOverviewView(Integer width, Integer height) {
+    super(width, height);
   }
 
   public void printView() throws Exception

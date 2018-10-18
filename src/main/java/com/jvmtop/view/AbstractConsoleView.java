@@ -42,19 +42,26 @@ public abstract class AbstractConsoleView implements ConsoleView
 
   private static final int MIN_WIDTH = 80;
 
+  private static final int MIN_HEIGHT= 25;
+
   private boolean shouldExit_ = false;
 
   protected final int width;
 
+  protected final int height;
+
   /**
    *
    */
-  public AbstractConsoleView(Integer width)
+  public AbstractConsoleView(Integer width, Integer height)
   {
     super();
     if (width == null) width = MIN_WIDTH;
     if (width < MIN_WIDTH) width = MIN_WIDTH;
     this.width = width;
+    if (height == null) height = MIN_HEIGHT;
+    if (height < MIN_HEIGHT) height = MIN_HEIGHT;
+    this.height= height;
   }
 
   /**
