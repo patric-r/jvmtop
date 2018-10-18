@@ -60,10 +60,12 @@ public class VMOverviewView extends AbstractConsoleView
 
     Collections.sort(vmInfoList, VMInfo.CPU_LOAD_COMPARATOR);
 
+    //FIXME: Is this the correct width for this purpose?
+    int w= this.getUsableMainClassWidth();
+
     for (VMInfo vmInfo : vmInfoList)
     {
-      if (vmInfo.getState() == VMInfoState.ATTACHED
-)
+      if (vmInfo.getState() == VMInfoState.ATTACHED)
       {
         printVM(vmInfo);
       }
@@ -72,19 +74,19 @@ public class VMOverviewView extends AbstractConsoleView
         System.out
             .printf(
                 "%5d %-15.15s [ERROR: Could not fetch telemetries (Process DEAD?)] %n",
-                vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
+                vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName(), w));
 
       }
       else if (vmInfo.getState() == VMInfoState.ERROR_DURING_ATTACH)
       {
         System.out.printf("%5d %-15.15s [ERROR: Could not attach to VM] %n",
-            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
+            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName(), w));
       }
       else if (vmInfo.getState() == VMInfoState.CONNECTION_REFUSED)
       {
         System.out.printf(
             "%5d %-15.15s [ERROR: Connection refused/access denied] %n",
-            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()));
+            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName(), w));
       }
 
     }
@@ -94,13 +96,13 @@ public class VMOverviewView extends AbstractConsoleView
    * @param name
    * @return
    */
-  private String getEntryPointClass(String name)
+  private String getEntryPointClass(String name, int length)
   {
     if (name.indexOf(' ') > 0)
     {
       name = name.substring(0, name.indexOf(' '));
     }
-    return rightStr(name, 15);
+    return rightStr(name, length);
   }
 
   /**
@@ -119,10 +121,12 @@ public class VMOverviewView extends AbstractConsoleView
       deadlockState = "!D";
     }
 
+    int w= this.getUsableMainClassWidth();
+
     System.out
         .printf(
-            "%5d %-15.15s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s%n",
-            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName()),
+            "%5d %-"+w+"."+w+"s %5s %5s %5s %5s %5.2f%% %5.2f%% %-5.5s %8.8s %4d %2.2s%n",
+            vmInfo.getId(), getEntryPointClass(vmInfo.getDisplayName(), w),
             toMB(vmInfo.getHeapUsed()), toMB(vmInfo.getHeapMax()),
             toMB(vmInfo.getNonHeapUsed()), toMB(vmInfo.getNonHeapMax()),
             vmInfo.getCpuLoad() * 100, vmInfo.getGcLoad() * 100,
@@ -130,6 +134,13 @@ public class VMOverviewView extends AbstractConsoleView
             deadlockState);
 
   }
+
+
+  private int getUsableMainClassWidth() {
+    // the usable width for the main-class column is the terminal width - other columns - whitespace
+    return this.width - 6 - 6 - 6 - 6 - 6 - 7 - 7 - 6 - 9 - 5 - 3;
+  }
+
 
   /**
    * @param vmList
@@ -173,7 +184,9 @@ public class VMOverviewView extends AbstractConsoleView
   */
   private void printHeader()
   {
-    System.out.printf("%5s %-15.15s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s%n",
+    int w= this.getUsableMainClassWidth();
+
+    System.out.printf("%5s %-"+w+"."+w+"s %5s %5s %5s %5s %6s %6s %5s %8s %4s %2s%n",
         "PID", "MAIN-CLASS", "HPCUR", "HPMAX", "NHCUR", "NHMAX", "CPU", "GC",
         "VM", "USERNAME", "#T", "DL");
   }
