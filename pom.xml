@@ -17,9 +17,9 @@
         <dependency>
             <groupId>com.sun</groupId>
             <artifactId>tools</artifactId>
-            <version>${jdk.version}</version>
+            <version>${java.version}</version>
             <scope>system</scope>
-            <systemPath>${toolsjar}</systemPath>
+            <systemPath>${project.basedir}/pom.xml</systemPath>
         </dependency>
     </dependencies>
 
@@ -27,7 +27,7 @@
     <properties>
         <!-- change it to point to your tools.jar from your JDK -->
         <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
-        <jdk.version>1.6</jdk.version>
+        <jdk.version>10</jdk.version>
     </properties>
 
     <build>
@@ -73,10 +73,20 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.8.0</version>
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
+                    <compilerArgs>
+                        <arg>--add-exports</arg>
+                        <arg>java.rmi/sun.rmi.transport=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>java.rmi/sun.rmi.server=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</arg>
+                        <arg>--add-exports</arg>
+                        <arg>jdk.management.agent/jdk.internal.agent=ALL-UNNAMED</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
@@ -91,7 +101,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>  
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -29,6 +29,17 @@
  */
 package com.jvmtop.openjdk.tools;
 
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+import jdk.internal.agent.ConnectorAddressLink;
+import sun.jvmstat.monitor.HostIdentifier;
+import sun.jvmstat.monitor.MonitorException;
+import sun.jvmstat.monitor.MonitoredHost;
+import sun.jvmstat.monitor.MonitoredVm;
+import sun.jvmstat.monitor.MonitoredVmUtil;
+import sun.jvmstat.monitor.VmIdentifier;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -37,20 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import sun.jvmstat.monitor.HostIdentifier;
-import sun.jvmstat.monitor.MonitorException;
-import sun.jvmstat.monitor.MonitoredHost;
-import sun.jvmstat.monitor.MonitoredVm;
-import sun.jvmstat.monitor.MonitoredVmUtil;
-import sun.jvmstat.monitor.VmIdentifier;
-import sun.management.ConnectorAddressLink;
-
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 // Sun specific
 // Sun private
 
@@ -367,22 +364,11 @@ public class LocalVirtualMachine
     }
 
     agent = f.getCanonicalPath();
-    try
-    {
-      vm.loadAgent(agent, "com.sun.management.jmxremote");
-    }
-    catch (AgentLoadException x)
-    {
-      IOException ioe = new IOException(x.getMessage());
-      ioe.initCause(x);
-      throw ioe;
-    }
-    catch (AgentInitializationException x)
-    {
-      IOException ioe = new IOException(x.getMessage());
-      ioe.initCause(x);
-      throw ioe;
-    }
+
+    vm.startLocalManagementAgent();
+    // vm.loadAgent(agent, "com.sun.management.jmxremote");
+
+
 
     // get the connector address
     if (J9Mode)
