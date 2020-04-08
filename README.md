@@ -30,7 +30,7 @@ Also have a look at the <a href='https://github.com/patric-r/jvmtop/blob/master/
 <h3>Installation</h3>
 Click on the <a href="https://github.com/patric-r/jvmtop/releases"> releases tab</a>, download the
 most recent tar.gz archive. Extract it, ensure that the `JAVA_HOME` environment variable points to a valid JDK and run `./jvmtop.sh`.<br><br>
-Further information can be found in the [INSTALL file](https://github.com/patric-r/jvmtop/blob/master/INSTALL)
+Further information can be found in the <a href="https://github.com/patric-r/jvmtop/blob/master/INSTALL">INSTALL file</a>
 
 
 
