@@ -29,6 +29,20 @@
  */
 package com.jvmtop.openjdk.tools;
 
+import com.sun.tools.attach.AgentInitializationException;
+import com.sun.tools.attach.AgentLoadException;
+import com.sun.tools.attach.AttachNotSupportedException;
+import com.sun.tools.attach.VirtualMachine;
+import com.sun.tools.attach.VirtualMachineDescriptor;
+import jdk.internal.perf.Perf;
+import jdk.internal.agent.ConnectorAddressLink;
+import sun.jvmstat.monitor.HostIdentifier;
+import sun.jvmstat.monitor.MonitorException;
+import sun.jvmstat.monitor.MonitoredHost;
+import sun.jvmstat.monitor.MonitoredVm;
+import sun.jvmstat.monitor.MonitoredVmUtil;
+import sun.jvmstat.monitor.VmIdentifier;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -37,20 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import sun.jvmstat.monitor.HostIdentifier;
-import sun.jvmstat.monitor.MonitorException;
-import sun.jvmstat.monitor.MonitoredHost;
-import sun.jvmstat.monitor.MonitoredVm;
-import sun.jvmstat.monitor.MonitoredVmUtil;
-import sun.jvmstat.monitor.VmIdentifier;
-import sun.management.ConnectorAddressLink;
-
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
-import com.sun.tools.attach.VirtualMachine;
-import com.sun.tools.attach.VirtualMachineDescriptor;
 // Sun specific
 // Sun private
 
@@ -189,11 +189,6 @@ public class LocalVirtualMachine
   private static void getMonitoredVMs(Map<Integer, LocalVirtualMachine> map,
       Map<Integer, LocalVirtualMachine> existingMap)
   {
-    //Unsupported on J9
-    if (J9Mode)
-    {
-      return;
-    }
     MonitoredHost host;
     Set vms;
     try
@@ -227,6 +222,7 @@ public class LocalVirtualMachine
           // use the command line as the display name
           name = MonitoredVmUtil.commandLine(mvm);
           attachable = MonitoredVmUtil.isAttachable(mvm);
+          Perf perf = Perf.getPerf();
           address = ConnectorAddressLink.importFrom(pid);
           mvm.detach();
         }
