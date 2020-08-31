@@ -34,7 +34,6 @@ import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-import jdk.internal.perf.Perf;
 import jdk.internal.agent.ConnectorAddressLink;
 import sun.jvmstat.monitor.HostIdentifier;
 import sun.jvmstat.monitor.MonitorException;
@@ -222,7 +221,6 @@ public class LocalVirtualMachine
           // use the command line as the display name
           name = MonitoredVmUtil.commandLine(mvm);
           attachable = MonitoredVmUtil.isAttachable(mvm);
-          Perf perf = Perf.getPerf();
           address = ConnectorAddressLink.importFrom(pid);
           mvm.detach();
         }
