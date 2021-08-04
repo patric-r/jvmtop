@@ -44,7 +44,6 @@ import sun.jvmstat.monitor.MonitoredHost;
 import sun.jvmstat.monitor.MonitoredVm;
 import sun.jvmstat.monitor.MonitoredVmUtil;
 import sun.jvmstat.monitor.VmIdentifier;
-import sun.management.ConnectorAddressLink;
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -227,7 +226,6 @@ public class LocalVirtualMachine
           // use the command line as the display name
           name = MonitoredVmUtil.commandLine(mvm);
           attachable = MonitoredVmUtil.isAttachable(mvm);
-          address = ConnectorAddressLink.importFrom(pid);
           mvm.detach();
         }
         catch (Exception x)
