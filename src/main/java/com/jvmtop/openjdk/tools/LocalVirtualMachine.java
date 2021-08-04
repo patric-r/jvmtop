@@ -44,7 +44,6 @@ import sun.jvmstat.monitor.MonitoredHost;
 import sun.jvmstat.monitor.MonitoredVm;
 import sun.jvmstat.monitor.MonitoredVmUtil;
 import sun.jvmstat.monitor.VmIdentifier;
-import sun.management.ConnectorAddressLink;
 
 import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
@@ -227,7 +226,6 @@ public class LocalVirtualMachine
           // use the command line as the display name
           name = MonitoredVmUtil.commandLine(mvm);
           attachable = MonitoredVmUtil.isAttachable(mvm);
-          address = ConnectorAddressLink.importFrom(pid);
           mvm.detach();
         }
         catch (Exception x)
@@ -348,6 +346,11 @@ public class LocalVirtualMachine
     }
 
     String home = vm.getSystemProperties().getProperty("java.home");
+    String java_v = vm.getSystemProperties().getProperty("java.version");
+    int version = Integer.parseInt(java_v.substring(0, java_v.indexOf('.')));
+    if (version == 1) {
+      version = java_v.charAt(2) - '0'; // 1.8, 1.7, 1.6, etc.
+    }
 
     // Normally in ${java.home}/jre/lib/management-agent.jar but might
     // be in ${java.home}/lib in build environments.
@@ -355,7 +358,7 @@ public class LocalVirtualMachine
     String agent = home + File.separator + "jre" + File.separator + "lib"
         + File.separator + "management-agent.jar";
     File f = new File(agent);
-    if (!f.exists())
+    if (!f.exists() && version < 8)
     {
       agent = home + File.separator + "lib" + File.separator
           + "management-agent.jar";
@@ -369,7 +372,10 @@ public class LocalVirtualMachine
     agent = f.getCanonicalPath();
     try
     {
-      vm.loadAgent(agent, "com.sun.management.jmxremote");
+      if (version < 8)
+        vm.loadAgent(agent, "com.sun.management.jmxremote");
+      else
+        vm.startLocalManagementAgent();
     }
     catch (AgentLoadException x)
     {
